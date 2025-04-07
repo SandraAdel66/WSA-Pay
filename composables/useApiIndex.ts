@@ -1,3 +1,5 @@
+import { useApiFetch } from '~/composables/useApiFetch';
+
 export const useApiIndex = ({
     api,
     filters = {},
@@ -23,8 +25,6 @@ export const useApiIndex = ({
     server?: boolean
     watch?: any[]
   }) => {
-    const config = useRuntimeConfig()
-  
     const body = {
       filters,
       orderBy: sort,
@@ -33,11 +33,11 @@ export const useApiIndex = ({
       paginate,
       delete: includeDeleted
     }
-  
+
     return useAsyncData(
       key || `api-index-${api}`,
       () =>
-        $fetch(`${config.public.apiBaseUrl}/api/${api}/index`, {
+        useApiFetch(`/api/${api}/index`, {
           method: 'POST',
           body
         }),
@@ -46,6 +46,5 @@ export const useApiIndex = ({
         server,
         watch
       }
-    )
-  }
-  
+    );
+};
