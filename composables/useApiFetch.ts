@@ -1,29 +1,45 @@
-import type { UseFetchOptions } from 'nuxt/app';
-import { useUserStore } from '~/stores/user';
+import type { UseFetchOptions } from "#app";
 
 export function useApiFetch<T>(path: string, options: UseFetchOptions<T> = {}) {
-    let headers: any = {
+    const config = useRuntimeConfig();
+    const apiUrl = config.public.apiUrl; // Already includes `/backend`
+
+    if (!path.startsWith('/')) {
+        path = '/' + path; // Ensure the path starts with a slash
+    }
+
+    let headers: Record<string, string> = {
         accept: 'application/json',
-        referer: process.env.APP_URL ?? 'http://localhost:3000',
+        referer: config.public.appUrl,
     };
-    
+
     const token = useCookie('XSRF-TOKEN');
     if (token.value) {
         headers['X-XSRF-TOKEN'] = token.value as string;
     }
 
     const userStore = useUserStore();
-    const bearerToken = userStore.token; // Assuming you're using localStorage to store the token
+    const bearerToken = userStore.token;
     if (bearerToken) {
         headers['Authorization'] = `Bearer ${bearerToken}`;
     }
-    return $fetch('/backend' + path, {
+
+    return $fetch<T>(`${apiUrl}${path}`, {
+        ...options,
         headers: {
             ...headers,
-            ...options?.headers,
+            ...(options.headers || {}),
         },
         onResponseError({ response }) {
             if (response.status === 401) {
+                const message = response?._data.message || 'Login failed, please try again.';
+                useToast({
+                    title: 'Error',
+                    message,
+                    type: 'error',
+                    duration: 5000,
+                });
+
                 userStore.setToken();
                 userStore.setUser();
                 navigateTo('/login');

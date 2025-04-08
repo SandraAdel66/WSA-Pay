@@ -1,120 +1,114 @@
 import { defineStore } from 'pinia';
 import type { LocationQueryValue } from 'vue-router';
+import { useToast } from '~/composables/useToast';
 
 type Employee = {
-    id: number;
-    name: string;
-    email: string;
+  id: number;
+  name: string;
+  email: string;
 };
 
 type Credential = {
-    email: string;
-    password: string;
+  email: string;
+  password: string;
 };
 
 export const useUserStore = defineStore('user', () => {
-    const user = ref<Employee | null>(null);
-    const token = useCookie('PFS_AUTH_TOKEN', { maxAge: 60 * 60 * 2 });
+  const user = ref<Employee | null>(null);
+  const token = useCookie('PFS_AUTH_TOKEN', { maxAge: 60 * 60 * 2 }); // Store token in cookie for 2 hours
 
-    // Computed property to check if the user is authenticated
-    const hasUser = computed(() => !!user.value);
+  // Computed property to check if the user is authenticated
+  const hasUser = computed(() => !!user.value);
 
-    const setToken = (data?: string) => {
-        token.value = data || '';
-    };
+  const setToken = (data?: string) => {
+    token.value = data || ''; // Set token value in the cookie
+  };
 
-    const setUser = (data?: Employee | null) => {
-        user.value = data || null;
-    };
+  const setUser = (data?: Employee | null) => {
+    user.value = data || null; // Set user data
+  };
 
-    const login = async (data: Credential, path?: string | LocationQueryValue) => {
-        try {
-            // Fetch CSRF token
-            await useApiFetch('/sanctum/csrf-cookie');
+  const login = async (data: Credential, path?: string | LocationQueryValue) => {
+    try {
+      // Step 1: Call the login API
+      const { data: userData, token: authToken, error } = await useApiFetch('/api/admin/login', {
+        method: 'POST',
+        body: data,
+      });
 
-            // Call login API
-            const { data: userData, error } = await useApiFetch('/api/login', {
-                method: 'POST',
-                body: data,
-            });
+      // Step 2: If login is successful
+      if (userData && authToken) {
+        const userResponse = userData as { data: Employee };
+        setUser(userResponse.data); // Set user data
+        setToken(authToken); // Set the token in the cookie
 
-            // Handle successful login
-            if (userData.value) {
-                const userResponse = userData.value as { data: Employee; token: string };
-                setUser(userResponse.data);
-                setToken(userResponse.token);
-
-                // Redirect after login
-                if (path) {
-                    navigateTo(path);
-                } else {
-                    navigateTo('/');
-                }
-                useToast({ title: 'Welcome', message: 'Logged in Successfully', type: 'success', duration: 5000 });
-            }
-
-            // Handle error from login response
-            if (error?.value) {
-                const message = error.value.data.message || 'Login failed, please try again.';
-                useToast({ title: 'Error', message, type: 'error', duration: 5000 });
-            }
-        } catch (err) {
-            console.error('Login error:', err);
-            useToast({ title: 'Error', message: 'An error occurred during login. Please try again.', type: 'error', duration: 5000 });
+        // Step 3: Redirect to the desired path
+        if (path) {
+          navigateTo(path);
+        } else {
+          navigateTo('/');
         }
-    };
 
-    const fetchAuthUser = async () => {
-        try {
-            // Fetch authenticated user
-            const { data: res, error } = await useApiFetch('/api/fetch-auth');
-            
-            if (res.value) {
-                setUser(res.value as Employee);
-            } else if (error?.value) {
-                const message = error.value.data.message || 'Failed to fetch authenticated user.';
-                useToast({ title: 'Error', message, type: 'error', duration: 5000 });
-                setUser(null);
-                await logout();
-            }
-        } catch (err) {
-            console.error('Error fetching authenticated user:', err);
-            useToast({ title: 'Error', message: 'An error occurred while fetching user data.', type: 'error', duration: 5000 });
-            setUser(null);
-            await logout();
-        }
-    };
+        // Step 4: Show success toast
+        useToast({
+          title: 'Welcome',
+          message: 'Logged in Successfully',
+          type: 'success',
+          duration: 5000,
+        });
+      } 
+    } catch (err) {
+      console.error('Login error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Invalid Credentials';
+     
+    }
+  };
 
-    const logout = async () => {
-        try {
-            // Logout request
-            await useApiFetch('/sanctum/csrf-cookie');
-            await useApiFetch('/api/logout', { method: 'POST' });
+  const fetchAuthUser = async () => {
+    try {
+      // Fetch authenticated user data
+      const { data: res, error } = await useApiFetch('/api/admin/details');
 
-            // Reset user and token
-            setToken();
-            setUser();
+      if (res) {
+        setUser(res as Employee); // Set the authenticated user data
+      } else if (error) {
+        const message = error.data.message || 'Failed to fetch authenticated user.';
+        setUser(null);
+        await logout();
+      }
+    } catch (err) {
+      console.error('Error fetching authenticated user:', err);
+      setUser(null);
+      await logout();
+    }
+  };
 
-            // Redirect to login
-            navigateTo('/login');
-        } catch (err) {
-            console.error('Error during logout:', err);
-            useToast({ title: 'Error', message: 'An error occurred during logout. Please try again.', type: 'error', duration: 5000 });
-        }
-    };
+  const logout = async () => {
+    try {
+      // Logout request
+      await useApiFetch('/api/admin/logout', { method: 'POST' });
 
-    return {
-        user,
-        token,
-        hasUser,    // Computed property to check if the user is authenticated
-        logout,
-        login,
-        fetchAuthUser,
-        setUser,
-        setToken,
-    };
+      // Reset user and token
+      setToken();
+      setUser();
+
+      // Redirect to login page
+      navigateTo('/login');
+
+      // Show success toast
+    } catch (err) {
+      console.error('Error during logout:', err);
+    }
+  };
+
+  return {
+    user,
+    token,
+    hasUser,
+    logout,
+    login,
+    fetchAuthUser,
+    setUser,
+    setToken,
+  };
 });
-function useToast(arg0: { title: string; message: string; type: string; duration: number; }) {
-    throw new Error('Function not implemented.');
-}
-

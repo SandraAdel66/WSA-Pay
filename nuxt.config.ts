@@ -1,15 +1,26 @@
-// nuxt.config.ts
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  ssr: true, // optional, but this is the default
+  ssr: true,
   pinia: {
     autoImports: ['defineStore'],
-},
+  },
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:8000'
-    }
+      appUrl: process.env.APP_URL ?? 'http://localhost:3300',
+      apiUrl: `${process.env.APP_URL ?? 'http://localhost:3300'}/backend`,
+    },
+  },
+  nitro: {
+    routeRules: {
+      '/backend/**': {
+        proxy: `${process.env.API_URL ?? 'http://127.0.0.1:8000'}/**`,
+      },
+      '/get-geoip/**': {
+        proxy: `http://ip-api.com/json/**`,
+      },
+    },
+    compressPublicAssets: true,
   },
   
   modules: [
@@ -17,9 +28,26 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/icon',
     '@nuxt/image',
-    '@nuxt/scripts'
-  ],
+    '@nuxt/scripts',
+    
+   ],
 
+  image: {
+    inject: true,
+    quality: 65,
+    format: ['webp'],
+    screens: {
+      xs: 320,
+      sm: 640,
+      md: 768,
+      lg: 1024,
+      xl: 1280,
+      xxl: 1536,
+    },
+  },
+  imports: {
+    dirs: ['./stores'],
+  },
   app: {
     head: {
       title: 'WSA PAY',
@@ -64,8 +92,9 @@ export default defineNuxtConfig({
         { src: '/app-assets/js/scripts/customizer.min.js', defer: true },
         { src: '/app-assets/js/scripts/footer.min.js', defer: true },
         { src: '/app-assets/js/scripts/pages/dashboard-analytics.min.js', defer: true },
-        
+
       ]
+
     }
   }
 })
