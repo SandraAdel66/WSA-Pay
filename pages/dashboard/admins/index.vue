@@ -4,7 +4,7 @@
     :items="[{ label: 'List of admins', to: '/admins' }]"
     :add="true"
     :filters="false"
-    @openModal="showModal = true"
+    @openModal="handleOpenModal"
   />
 
   <!-- Modal -->
@@ -41,8 +41,14 @@ import { useApiIndex } from "~/composables/useApiIndex";
 
 const showModal = ref(false); // Control the visibility of the modal
 
+
+
 // Define the fields for the dynamic form
-const formFields = ref([
+const formFields = ref([]);
+
+// Handle opening the modal
+const handleOpenModal = () => {
+  formFields.value = [
   {
     name: "email",
     label: "Email",
@@ -61,7 +67,10 @@ const formFields = ref([
     required: true,
     class: "form-control", // Add form-control class here
   },
-]);
+  ]; // Reset form fields if needed
+  showModal.value = true;
+};
+
 
 definePageMeta({
   layout: "default",
