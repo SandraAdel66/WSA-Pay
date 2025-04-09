@@ -1,9 +1,10 @@
-import { useUserStore } from "~/stores/user";
-
 export default defineNuxtRouteMiddleware(async (to, from) => {
-    const userStore = useUserStore();  // Access the user store directly
-
+    const userStore = useUserStore();
+    await userStore.fetchAuthUser();
+  
     if (userStore.user || userStore.token) {
-        return navigateTo('/');
+      return navigateTo('/dashboard');
     }
-});
+  
+  });
+  

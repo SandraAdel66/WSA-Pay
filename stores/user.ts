@@ -30,39 +30,34 @@ export const useUserStore = defineStore('user', () => {
 
   const login = async (data: Credential, path?: string | LocationQueryValue) => {
     try {
-      // Step 1: Call the login API
-      const { data: userData, token: authToken, error } = await useApiFetch('/api/admin/login', {
+      const { data: userData, token: authToken } = await useApiFetch('/api/admin/login', {
         method: 'POST',
         body: data,
       });
-
-      // Step 2: If login is successful
+  
       if (userData && authToken) {
         const userResponse = userData as { data: Employee };
-        setUser(userResponse.data); // Set user data
-        setToken(authToken); // Set the token in the cookie
-
-        // Step 3: Redirect to the desired path
-        if (path) {
-          navigateTo(path);
-        } else {
-          navigateTo('/');
-        }
-
-        // Step 4: Show success toast
+  
+        setToken(authToken); // must set token first if fetchAuthUser depends on it
+        await fetchAuthUser(); // ✅ important: ensure user is fetched and reactive
+  
+        // ✅ Optional: give nextTick() time for layout/middleware to react
+        await nextTick();
+  
+        navigateTo(path || '/dashboard');
+  
         useToast({
           title: 'Welcome',
           message: 'Logged in Successfully',
           type: 'success',
           duration: 5000,
         });
-      } 
+      }
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Invalid Credentials';
-     
     }
   };
+  
 
   const fetchAuthUser = async () => {
     try {

@@ -2,8 +2,9 @@
   <section id="basic-datatable">
     <div class="row">
       <div class="col-12">
+        <!-- Top Controls -->
         <div class="d-flex justify-content-between mb-1">
-          <div>
+          <div class="gap-2">
             <label>
               Show
               <select
@@ -20,6 +21,15 @@
                 </option>
               </select>
             </label>
+
+            <button
+              class="btn btn-outline-danger ml-1 btn-icon"
+              :disabled="selectedIds.length === 0"
+              @click="deleteSelected"
+            >
+              <i class="feather icon-check"></i> 
+              Delete selected
+            </button>
           </div>
           <div>
             <label>
@@ -35,6 +45,7 @@
           </div>
         </div>
 
+        <!-- Table -->
         <div class="card">
           <div class="card-content">
             <div class="card-body card-dashboard">
@@ -42,9 +53,26 @@
                 <table class="table table-striped">
                   <thead>
                     <tr>
+                      <th>
+                        <fieldset class="checkbox">
+                          <div class="vs-checkbox-con vs-checkbox-primary">
+                            <input
+                              type="checkbox"
+                              :checked="isAllSelected"
+                              @change="toggleSelectAll"
+                            />
+                            <span class="vs-checkbox">
+                              <span class="vs-checkbox--check">
+                                <i class="vs-icon feather icon-check"></i>
+                              </span>
+                            </span>
+                          </div>
+                        </fieldset>
+                      </th>
                       <th v-for="(col, index) in columns" :key="index">
                         {{ col.label }}
                       </th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -52,12 +80,43 @@
                       v-for="(item, rowIndex) in filteredData"
                       :key="rowIndex"
                     >
+                      <td>
+                        <fieldset class="checkbox">
+                          <div class="vs-checkbox-con vs-checkbox-primary">
+                            <input
+                              type="checkbox"
+                              :value="item.id"
+                              :checked="selectedIds.includes(item.id)"
+                              @change="toggleSingleSelect(item.id)"
+                            />
+                            <span class="vs-checkbox">
+                              <span class="vs-checkbox--check">
+                                <i class="vs-icon feather icon-check"></i>
+                              </span>
+                            </span>
+                          </div>
+                        </fieldset>
+                      </td>
                       <td v-for="(col, colIndex) in columns" :key="colIndex">
                         {{ item[col.key] }}
                       </td>
+                      <td>
+                        <button
+                          class="btn btn-primary btn-icon"
+                          @click="editItem(item)"
+                        >
+                          <i class="feather icon-edit"></i>
+                        </button>
+                        <button
+                          class="btn btn-danger ml-1 btn-icon"
+                          @click="confirmDelete(item.id)"
+                        >
+                          <i class="feather icon-trash"></i>
+                        </button>
+                      </td>
                     </tr>
-                    <tr v-if="filteredData === 0">
-                      <td :colspan="columns.length">No data available</td>
+                    <tr v-if="filteredData.length === 0">
+                      <td :colspan="columns.length + 1">No data available</td>
                     </tr>
                   </tbody>
                 </table>
@@ -66,6 +125,7 @@
           </div>
         </div>
 
+        <!-- Pagination -->
         <div class="d-flex justify-content-between">
           <div>
             <div role="status" aria-live="polite">
@@ -98,9 +158,9 @@
     </div>
   </section>
 </template>
-  
-  <script setup lang="ts">
-import { ref, watch } from "vue";
+
+<script setup lang="ts">
+import { ref, watch, computed } from "vue";
 
 const props = defineProps({
   data: {
@@ -117,9 +177,15 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits([
+  "change-per-page",
+  "change-search",
+  "change-page",
+  "update-selected",
+]);
+
 const localPerPage = ref(10);
 const localSearchQuery = ref("");
-
 const pageOptions = [5, 10, 25, 50, 100, 500];
 
 watch(
@@ -130,18 +196,74 @@ watch(
   { immediate: true }
 );
 
-// filtered data based on search query
+// Filtered data based on search query
 const filteredData = computed(() => {
   if (!localSearchQuery.value) return props.data;
 
   const query = localSearchQuery.value.toLowerCase();
-
-  return props.data.filter((item) => {
-    return Object.values(item).some((val) =>
-      String(val).toLowerCase().includes(query)
-    );
-  });
+  return props.data.filter((item) =>
+    Object.values(item).some((val) => String(val).toLowerCase().includes(query))
+  );
 });
 
+// Checkbox selection
+const selectedIds = ref<number[] | string[]>([]);
+
+// Emit selected IDs to parent
+watch(selectedIds, () => {
+  emit("update-selected", selectedIds.value);
+});
+
+// Select All checkbox logic
+const isAllSelected = computed(() => {
+  return (
+    filteredData.value.length > 0 &&
+    filteredData.value.every((item) => selectedIds.value.includes(item.id))
+  );
+});
+
+const toggleSelectAll = (event: Event) => {
+  const checked = (event.target as HTMLInputElement).checked;
+  const currentPageIds = filteredData.value.map((item) => item.id);
+
+  if (checked) {
+    // Add all current page IDs to selectedIds
+    selectedIds.value = Array.from(
+      new Set([...selectedIds.value, ...currentPageIds])
+    );
+  } else {
+    // Remove all current page IDs
+    selectedIds.value = selectedIds.value.filter(
+      (id) => !currentPageIds.includes(id)
+    );
+  }
+};
+
+const toggleSingleSelect = (id: string | number) => {
+  if (selectedIds.value.includes(id)) {
+    selectedIds.value = selectedIds.value.filter((i) => i !== id);
+  } else {
+    selectedIds.value.push(id);
+  }
+};
+
+// Handle Edit Button Click
+const editItem = (item) => {
+  emit("edit-item", item);  // Emit the selected item to parent for further editing
+};
+
+// Confirm Delete for selected Item
+const confirmDelete = (id) => {
+  if (confirm("Are you sure you want to delete this admin?")) {
+    emit("delete-item", id);  // Emit the ID for deletion
+  }
+};
+
+// Handle Deleting Selected Items
+const deleteSelected = () => {
+  if (selectedIds.value.length === 0) return;
+  if (confirm("Are you sure you want to delete selected admins?")) {
+    emit("delete-selected", selectedIds.value);  // Emit selected IDs to delete
+  }
+};
 </script>
-  

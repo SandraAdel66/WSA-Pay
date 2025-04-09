@@ -33,40 +33,48 @@
         data-menu="menu-navigation"
       >
         <li class="navigation-header"><span>Analytics</span></li>
-        <li class="nav-item">
-          <NuxtLink to="/">
+        <li class="nav-item" :class="{ active: route.path === '/dashboard' }">
+          <NuxtLink to="/dashboard">
             <i class="feather icon-home"></i>
             <span class="menu-item">Dashboard</span>
           </NuxtLink>
         </li>
-        <li class="navigation-header"><span>Pages</span></li>
 
-        <li class="nav-item">
-          <a href="javascript:void(0)"
-            ><i class="feather icon-users"></i
-            ><span class="menu-title">Memebers</span
-            ><span class="badge badge badge-warning badge-pill float-right mr-2"
+        <!-- Members Dropdown -->
+        <li
+          class="nav-item"
+          :class="{ open: route.path.startsWith('/dashboard/members') }"
+        >
+          <a href="javascript:void(0)">
+            <i class="feather icon-users"></i>
+            <span class="menu-title">Members</span>
+            <span class="badge badge badge-warning badge-pill float-right mr-2"
               >2</span
-            ></a
-          >
+            >
+          </a>
           <ul class="menu-content">
-            <li class="">
+            <li :class="{ active: route.path === '/dashboard/members' }">
               <NuxtLink to="/dashboard/members">
                 <i class="feather icon-circle"></i>
                 <span class="menu-item">List</span>
               </NuxtLink>
             </li>
-            <li class="">
+            <li
+              :class="{ active: route.path === '/dashboard/members/pending' }"
+            >
               <NuxtLink to="/dashboard/members/pending">
                 <i class="feather icon-circle"></i>
-                <span class="menu-item"
-                  >Pending</span
-                >
+                <span class="menu-item">Pending</span>
               </NuxtLink>
             </li>
           </ul>
         </li>
-        <li class="nav-item">
+
+        <!-- Admins -->
+        <li
+          class="nav-item"
+          :class="{ active: route.path === '/dashboard/admins' }"
+        >
           <NuxtLink to="/dashboard/admins">
             <i class="feather icon-users"></i>
             <span class="menu-item">Admins</span>
@@ -77,3 +85,9 @@
   </div>
   <!-- END: Main Menu-->
 </template>
+
+<script setup>
+import { useRoute } from "vue-router";
+
+const route = useRoute();
+</script>

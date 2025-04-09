@@ -1,27 +1,30 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
-    const userStore = useUserStore();
-    await userStore.fetchAuthUser();
-
-    if (userStore.user || userStore.token) {
-        if (userStore.user?.firstLoginAt === null) {
-            if (to.path !== '/profile/complete-profile') {
-                return navigateTo('/profile/complete-profile');
-            }
-        } else if (to.path === '/profile/complete-profile') {
-            return navigateTo('/profile/edit');
-        }
-
-        // Role-based layout selection
-        if (userStore.user?.role === 'employee') {
-            to.meta.layout = 'employee'; // Set layout to `employee.vue`
-            if (to.path === '/') return navigateTo('/employee');
-        } else if (userStore.user?.role === 'admin') {
-            to.meta.layout = 'default'; // Set layout to `default.vue`
-            if (to.path === '/employee') return navigateTo('/');
-        }
-        
-        return;
+    const { $pinia } = useNuxtApp();
+    const userStore = useUserStore($pinia);
+  
+    // Check if the user is already on the login page
+    if (to.path === '/login') {
+      // If user is already logged in, redirect to the dashboard
+      if (userStore.user || userStore.token) {
+        return navigateTo('/dashboard');
+      }
+      // If not logged in, stay on the login page
+      return;
     }
-
-    return navigateTo({ path: '/login', query: { redirect: to.fullPath } });
-});
+  
+    try {
+      await userStore.fetchAuthUser();
+  
+      if (userStore.user || userStore.token) {
+        // User is logged in, allow access to requested page
+        return;
+      }
+  
+      // Redirect to login if not authenticated
+      return navigateTo({ path: '/login', query: { redirect: to.fullPath } });
+    } catch (err) {
+      // In case of error, redirect to login page
+      return navigateTo('/login');
+    }
+  });
+  

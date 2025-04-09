@@ -143,4 +143,11 @@
  
  <script setup>
 import Breadcrumb from "@/components/theme/Breadcrumb.vue";
+
+
+definePageMeta({
+  layout: "default",
+  middleware: "auth",
+  title: "Pending Members",
+});
 </script>
