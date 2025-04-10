@@ -20,10 +20,7 @@
 
   <Table
     v-if="admins && admins.data"
-    :columns="[
-      { label: 'Name', key: 'name' },
-      { label: 'Email', key: 'email' },
-    ]"
+    :columns="columns"
     :data="admins.data"
     :meta="admins.meta"
     @change-page="handlePageChange"
@@ -42,80 +39,58 @@ import { ref } from "vue";
 import Breadcrumb from "@/components/theme/Breadcrumb.vue";
 import Modal from "@/components/theme/Modal.vue";
 import Table from "@/components/theme/Table.vue";
-import { useApiIndex } from "~/composables/useApiIndex";
 const { $swal } = useNuxtApp();
 
-const showModal = ref(false); // Control the visibility of the modal
-
-const id = ref(null); // ID of the item being edited
-const title = ref(""); // Title for the modal
-const apiTitle = ref("add"); // Title for the form
-// Define the fields for the dynamic form
+// Reusable constants and state
+const showModal = ref(false);
+const id = ref(null);
+const title = ref("");
+const apiTitle = ref("add");
 const formFields = ref([]);
-const showDeleted = ref(false); // Control the visibility of deleted items
+const showDeleted = ref(false);
 
-// Handle opening the modal
-const handleOpenModal = () => {
-  title.value = "Add Admin"; // Set the title for adding
-  formFields.value = [
-    {
-      name: "name",
-      label: "Name",
-      type: "text",
-      placeholder: "Enter your name",
-      value: "",
-      required: true,
-      class: "form-control", // Add form-control class here
-    },
-    {
-      name: "email",
-      label: "Email",
-      type: "email",
-      placeholder: "Enter your email",
-      value: "",
-      required: true,
-      class: "form-control", // Add form-control class here
-    },
+const columns = [
+  { label: 'Name', key: 'name' },
+  { label: 'Email', key: 'email' },
+];
 
-    {
-      name: "password",
-      label: "Password",
-      type: "password",
-      value: "",
-      required: false,
-      class: "form-control",
-    },
-  ]; // Reset form fields if needed
-  showModal.value = true;
-};
-
-definePageMeta({
-  layout: "default",
-  middleware: "auth",
-  title: "Admins",
-});
-
+const formFieldsConfig = [
+  { name: "name", label: "Name", type: "text", placeholder: "Enter your name", required: true, class: "form-control" },
+  { name: "email", label: "Email", type: "email", placeholder: "Enter your email", required: true, class: "form-control" },
+  { name: "password", label: "Password", type: "password", required: false, class: "form-control" },
+];
 const currentPage = ref(1);
 const perPage = ref(5);
 const search = ref("");
-
-const {
-  data: admins,
-  pending,
-  error,
-  refresh,
-} = useApiIndex({
+// API Hook for fetching admins
+const { data: admins, pending, error, refresh } = useApiIndex({
   api: "admin",
   key: "admins-list",
   watch: [currentPage, perPage, search],
-  params: () => ({
-    page: currentPage.value,
-    per_page: perPage.value,
-    search: search.value,
-  }),
+  params: () => ({ page: currentPage.value, per_page: perPage.value, search: search.value }),
 });
 
-// Handle pagination and search changes
+
+
+// Handlers
+const handleOpenModal = () => {
+  title.value = "Add Admin";
+  formFields.value = formFieldsConfig.map(field => ({ ...field, value: "" }));
+  showModal.value = true;
+};
+
+const handleEditItem = (item) => {
+  title.value = "Edit Admin";
+  apiTitle.value = "update";
+  showModal.value = true;
+  id.value = item.id;
+  formFields.value = formFieldsConfig.map(field => ({
+    ...field,
+    value: field.name === "password" ? "" : item[field.name],
+  }));
+};
+
+// Pagination and Search Handlers
 function handlePageChange(url) {
   const page = new URL(url).searchParams.get("page");
   if (page) currentPage.value = Number(page);
@@ -131,136 +106,72 @@ function handleSearchChange(value) {
   currentPage.value = 1;
 }
 
-// Handle editing item
-function handleEditItem(item) {
-  title.value = "Edit Admin"; // Set the title for editing
-  apiTitle.value = "update"; // Set the form title for editing
-  showModal.value = true; // Show the modal for editing
-  id.value = item.id; // Set the ID of the item being edited
-  formFields.value = [
-    {
-      name: "name",
-      label: "Name",
-      type: "text",
-      value: item.name,
-      required: true,
-      class: "form-control",
-    },
-    {
-      name: "email",
-      label: "Email",
-      type: "email",
-      value: item.email,
-      required: true,
-      class: "form-control",
-    },
-    {
-      name: "password",
-      label: "Password",
-      type: "password",
-      value: "",
-      required: false,
-      class: "form-control",
-    },
-    // Add more fields as necessary
-  ];
+// Delete Handlers
+async function handleDeleteItem(id) {
+  const confirm = await confirmDelete();
+  if (confirm) {
+    const { data, error } = await useApiDelete({ api: "admin", ids: [id] });
+    if (data) {
+      showSuccessAlert();
+      refresh();
+    }
+  }
 }
 
+async function handleDeleteSelected(ids) {
+  const confirm = await confirmDelete(ids.length);
+  if (confirm) {
+    const { data, error } = await useApiDelete({ api: "admin", ids });
+    if (data) {
+      showSuccessAlert();
+      refresh();
+    }
+  }
+}
 
-async function handleDeleteItem(id) {
+async function confirmDelete(itemCount = 1) {
   const confirm = await $swal.fire({
     title: "Are you sure?",
-    text: "You won’t be able to revert this!",
+    text: `You’re deleting ${itemCount} item(s)!`,
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#d33",
     cancelButtonColor: "#3085d6",
     confirmButtonText: "Yes, delete it!",
-    customClass: {
-      popup: "custom-swal-popup",
-    },
+    customClass: { popup: "custom-swal-popup" },
     didOpen: () => {
       const popup = document.querySelector(".swal2-popup");
       if (popup) popup.style.gridRow = "1";
     },
   });
-
-  if (confirm.isConfirmed) {
-    const { data, error } = useApiDelete({
-      api: "admin",
-      ids: [id],
-    });
-
-    $swal.fire({
-      icon: "success",
-      title: "Deleted!",
-      text: "Item has been deleted.",
-      confirmButtonText: "OK",
-      customClass: {
-        popup: "custom-swal-popup",
-      },
-      didOpen: () => {
-        const popup = document.querySelector(".swal2-popup");
-        if (popup) popup.style.gridRow = "1";
-      },
-    });
-    refresh(); // Refresh the data after deletion
-
-  }
+  return confirm.isConfirmed;
 }
 
-async function handleDeleteSelected(ids) {
-  const confirm = await $swal.fire({
-    title: "Are you sure?",
-    text: `You are deleting ${ids.length} item(s)!`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Yes, delete them!",
-    customClass: {
-      popup: "custom-swal-popup",
-    },
+function showSuccessAlert() {
+  $swal.fire({
+    icon: "success",
+    title: "Deleted!",
+    text: "The item(s) have been deleted.",
+    confirmButtonText: "OK",
+    customClass: { popup: "custom-swal-popup" },
     didOpen: () => {
       const popup = document.querySelector(".swal2-popup");
       if (popup) popup.style.gridRow = "1";
     },
   });
-
-  if (confirm.isConfirmed) {
-    const { data, error } = useApiDelete({
-      api: "admin",
-      ids,
-    });
-
-    $swal.fire({
-      icon: "success",
-      title: "Deleted!",
-      text: "Selected items have been deleted.",
-      confirmButtonText: "OK",
-      customClass: {
-        popup: "custom-swal-popup",
-      },
-      didOpen: () => {
-        const popup = document.querySelector(".swal2-popup");
-        if (popup) popup.style.gridRow = "1";
-      },
-    });
-    refresh(); // Refresh the data after deletion
-  }
 }
 
+// Fetch deleted items
 function getDeletedItems() {
   showDeleted.value = true;
   return useApiIndex({
     api: "admin",
-    key: "admins-deleted-list", // Use a different key to avoid conflict with default list
-    watch: [], // Optional: no watchers unless you want reactivity
+    key: "admins-deleted-list",
     params: () => ({
       page: currentPage.value,
       per_page: perPage.value,
       search: search.value,
-      delete: showDeleted.value, // ✅ THIS is the main part
+      delete: showDeleted.value,
     }),
   });
 }
@@ -269,19 +180,23 @@ function getAllItems() {
   showDeleted.value = false;
   return useApiIndex({
     api: "admin",
-    key: "admins-deleted-list", // Use a different key to avoid conflict with default list
-    watch: [], // Optional: no watchers unless you want reactivity
+    key: "admins-deleted-list",
     params: () => ({
       page: currentPage.value,
       per_page: perPage.value,
       search: search.value,
-      delete: showDeleted.value, // ✅ THIS is the main part
+      delete: showDeleted.value,
     }),
   });
 }
 
+definePageMeta({
+  layout: "default",
+  middleware: "auth",
+  title: "Admins",
+});
 </script>
 
 <style scoped>
-/* Add your custom styles here if needed */
+/* Add your custom styles here */
 </style>
