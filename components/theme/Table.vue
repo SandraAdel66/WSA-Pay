@@ -28,7 +28,21 @@
               @click="deleteSelected"
             >
               <i class="feather icon-check"></i> 
-              Delete selected
+              delete selected
+            </button>
+            <button v-if="!showDeletedItems"
+              class="btn btn-danger ml-1 btn-icon"
+              @click="deletedItems"
+            >
+              <i class="feather icon-delete"></i> 
+              deleted items
+            </button>
+            <button v-if="showDeletedItems"
+              class="btn btn-success ml-1 btn-icon"
+              @click="getItems"
+            >
+              <i class="feather icon-check"></i> 
+               items
             </button>
           </div>
           <div>
@@ -188,6 +202,8 @@ const localPerPage = ref(10);
 const localSearchQuery = ref("");
 const pageOptions = [5, 10, 25, 50, 100, 500];
 
+const showDeletedItems = ref(false);
+
 watch(
   () => props.meta,
   () => {
@@ -254,16 +270,26 @@ const editItem = (item) => {
 
 // Confirm Delete for selected Item
 const confirmDelete = (id) => {
-  if (confirm("Are you sure you want to delete this admin?")) {
-    emit("delete-item", id);  // Emit the ID for deletion
-  }
+  emit("delete-item", id);  // Emit the ID for deletion
+
 };
 
 // Handle Deleting Selected Items
 const deleteSelected = () => {
   if (selectedIds.value.length === 0) return;
-  if (confirm("Are you sure you want to delete selected admins?")) {
-    emit("delete-selected", selectedIds.value);  // Emit selected IDs to delete
-  }
+  emit("delete-selected", selectedIds.value);  // Emit selected IDs to delete
+
+};
+
+// Handle Deleted Items
+const deletedItems = () => {
+  showDeletedItems.value = true;  // Toggle deleted items view
+  emit("deleted-items");  // Emit to show deleted items
+};
+
+// Handle Deleted Items
+const getItems = () => {
+  showDeletedItems.value = false;  // Toggle deleted items view
+  emit("get-items");  // Emit to show deleted items
 };
 </script>

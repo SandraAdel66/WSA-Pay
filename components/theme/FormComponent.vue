@@ -1,134 +1,148 @@
 <template>
-  <div>
-    <form @submit.prevent="handleSubmit">
-      <div v-for="(field, index) in fields" :key="index" class="form-group">
-        <label :for="field.name">{{ field.label }}</label>
+  <div v-for="(field, index) in fields" :key="index" class="mb-1">
+    <label :for="field.name" class="form-label">{{ field.label }}</label>
 
-        <!-- Render input field dynamically based on type -->
-        <component
-          :is="getFieldComponent(field)"
-          v-model="formData[field.name]"
-          :name="field.name"
-          :type="field.type"
-          :placeholder="field.placeholder"
-          :options="field.options"
-          :class="[
-            'form-control',
-            FormError && !validity[field.name] ? 'is-invalid' : ''
-          ]"
-          :value="formData[field.name] || field.value"
-          @blur="validateField(field)"
-        />
+    <!-- Check for the type of input (textarea, select, or input) -->
+    <input
+      v-if="
+        field.type === 'text' ||
+        field.type === 'email' ||
+        field.type === 'password'
+      "
+      v-model="field.value"
+      :type="field.type"
+      :name="field.name"
+      :placeholder="field.placeholder"
+      :class="['form-control', { 'is-invalid': field.error }]"
+      :required="field.required"
+    />
+    <textarea
+      v-if="field.type === 'textarea'"
+      v-model="field.value"
+      :name="field.name"
+      :placeholder="field.placeholder"
+      :class="['form-control', { 'is-invalid': field.error }]"
+      :required="field.required"
+    ></textarea>
+    <select
+      v-if="field.type === 'select'"
+      v-model="field.value"
+      :name="field.name"
+      :class="['form-control', { 'is-invalid': field.error }]"
+      :required="field.required"
+    >
+      <option value="" disabled selected>Select an option</option>
+      <option
+        v-for="(option, optionIndex) in field.options"
+        :key="optionIndex"
+        :value="option.value"
+      >
+        {{ option.label }}
+      </option>
+    </select>
 
-        <!-- Validation error message, shown only when field is empty and form is submitted -->
-        <span v-if="FormError && !validity[field.name]" class="invalid-feedback">This field is required.</span>
-      </div>
+    <!-- Display error message if validation fails -->
+    <div v-if="field.error" class="invalid-feedback">{{ field.error }}</div>
+  </div>
 
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">
-          Submit
-        </button>
-        <button type="button" class="btn btn-danger" @click="$emit('close')">
-          Close
-        </button>
-      </div>
-    </form>
+  <div class="modal-footer">
+    <!-- Change the button text based on apiTitle -->
+    <button type="button" @click="handleSubmit" class="btn btn-primary">
+      {{ apiTitle === "update" ? "Update" : "Submit" }}
+    </button>
+    <button type="button" class="btn btn-danger" @click="$emit('close')">
+      Close
+    </button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref } from "vue";
+import { useApiStoreOrEdit } from "@/composables/useApiStoreOrEdit"; // Make sure to import your composable
+const { $swal } = useNuxtApp();
 
+// Define emits
+const emit = defineEmits(["close", "refresh"]);
+// Define props
 const props = defineProps({
   fields: {
     type: Array,
     required: true,
   },
-  isEditing: {
-    type: Boolean,
-    default: false,
+  apiTitle: {
+    type: String,
+    default: "",
+  },
+  id: {
+    type: [String, Number],
+    default: null,
   },
 });
 
-const FormError = ref(false); // Error message for form submission
-const formData = ref({}); // Form data
-const validity = ref({}); // Tracks validity of each field
-
-// Reset formData to null for empty values (when modal opens)
-const resetFormData = () => {
-  props.fields.forEach((field) => {
-    formData.value[field.name] = field.value || '';  // Set form field to field.value (if available) or empty string
-    validity.value[field.name] = true; // Set initial validity to true
-  });
-};
-
-// Watch for changes in isEditing and reset formData when false (Add mode)
-watch(() => props.isEditing, (newVal) => {
-  if (!newVal) {
-    resetFormData();  // Reset fields when isEditing is false (Add mode)
-  }
-});
-
-// Initialize formData and validity state when modal opens
-onMounted(() => {
-  if (!props.isEditing) {
-    resetFormData(); // Reset fields for the Add form when the component is mounted in Add mode
-  }
-});
-
-// Determine which component to render
-const getFieldComponent = (field) => {
-  switch (field.type) {
-    case 'select':
-      return 'select';
-    case 'textarea':
-      return 'textarea';
-    default:
-      return 'input';
-  }
-};
-
-// Validate a single field
-const validateField = (field) => {
-  if (field.required) {
-    if (field.type === 'email') {
-      // Validate email format
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      validity.value[field.name] = emailRegex.test(formData.value[field.name]);
-    } else {
-      // Check for empty value
-      validity.value[field.name] = formData.value[field.name] !== '';
-    }
-  }
-};
-
-// Handle form submission
-const handleSubmit = () => {
-  FormError.value = false;  // Reset FormError before submission
-
+// Define a method to handle form submission
+const handleSubmit = async () => {
+  // Validate form data
   let isValid = true;
 
-  // Validate all fields before submission
+  // Check for required fields based on field type
   props.fields.forEach((field) => {
-    if (field.required) {
-      if (field.type === 'email') {
-        // Validate email format
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        validity.value[field.name] = emailRegex.test(formData.value[field.name]);
-      } else {
-        validity.value[field.name] = formData.value[field.name] !== '';  // Validate for empty fields only
-      }
-      isValid = isValid && validity.value[field.name];  // Check if all required fields are valid
+    if (field.required && !field.value) {
+      isValid = false;
+      field.error = `${field.label} is required.`; // Display error message for required fields
+    } else {
+      field.error = null; // Clear error message if field is valid
+    }
+
+    // Additional validation for other field types (e.g., select, textarea)
+    if (field.type === "select" && field.required && !field.value) {
+      isValid = false;
+      field.error = `${field.label} is required.`;
+    }
+
+    if (field.type === "textarea" && field.required && !field.value) {
+      isValid = false;
+      field.error = `${field.label} is required.`;
     }
   });
 
-  FormError.value = !isValid;  // Set FormError to true if the form is invalid
-
   if (isValid) {
-    // Proceed with the form submission
-    console.log('Form is valid, submitting...');
-  } else {
-    console.log('Form is invalid, please correct the errors.');
+    // Prepare data for submission
+    const formData = props.fields.reduce((data, field) => {
+      data[field.name] = field.value;
+      return data;
+    }, {});
+
+    // Call the composable function to either store or update based on `apiTitle`
+    const { data, error } = await useApiStoreOrEdit({
+      api: "admin", // Replace with appropriate API
+      id: props.apiTitle === "update" ? props.id : null, // Use ID for updating
+      method: props.apiTitle === "update" ? "PATCH" : "POST", // Use PUT for updating, POST for creating
+      params: () => formData,
+    });
+    $swal.fire({
+      icon: "success",
+      title: "Success",
+      text: "Data saved successfully.",
+      confirmButtonText: "OK",
+      customClass: {
+        popup: "custom-swal-popup",
+      },
+      didOpen: () => {
+        const popup = document.querySelector(".swal2-popup");
+        if (popup) {
+          popup.style.gridRow = "1";
+        }
+      },
+    });
+
+    emit("close");
+    emit("refresh");
+
+    const backdropElement = document.querySelector(".modal-backdrop");
+    if (backdropElement) {
+      backdropElement.classList.remove("show");
+      backdropElement.parentNode.removeChild(backdropElement);
+    }
   }
 };
 </script>

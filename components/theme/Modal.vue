@@ -17,7 +17,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <FormComponent :fields="formFields" @close="closeModal" />
+          <FormComponent :fields="formFields" @close="closeModal" @refresh="refresh" :id="id" :apiTitle="apiTitle" />
         </div>
       </div>
     </div>
@@ -32,7 +32,11 @@ import FormComponent from "@/components/theme/FormComponent.vue";
 const props = defineProps({
   showModal: { type: Boolean, default: false },
   formFields: { type: Array, default: () => [] },
+  apiTitle: { type: String, default: '' },
   title: { type: String, default: 'Modal Title' },
+  id: { type: [String, Number], default: null },
+  refresh: { type: Function, default: () => {} },
+  
 });
 
 // Emits
