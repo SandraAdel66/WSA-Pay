@@ -23,22 +23,22 @@
             </label>
 
             <button
-              class="btn btn-outline-danger ml-1 btn-icon"
-              :disabled="selectedIds.length === 0"
+              class="btn btn-danger btnOut  ml-1 btn-icon"
+              :readonly="selectedIds.length === 0"
               @click="deleteSelected"
             >
-              <i class="feather icon-check"></i> 
-              delete selected
+              <i class="feather icon-trash"></i> 
+               multiple
             </button>
             <button v-if="!showDeletedItems"
-              class="btn btn-danger ml-1 btn-icon"
+              class="btn btn-outline-danger btnOut ml-1 btn-icon"
               @click="deletedItems"
             >
               <i class="feather icon-delete"></i> 
               deleted items
             </button>
             <button v-if="showDeletedItems"
-              class="btn btn-success ml-1 btn-icon"
+              class="btn btn-outline-success btnOut ml-1 btn-icon"
               @click="getItems"
             >
               <i class="feather icon-check"></i> 
@@ -46,6 +46,7 @@
             </button>
           </div>
           <div>
+          
             <label>
               Search:
               <input
@@ -62,12 +63,12 @@
         <!-- Table -->
         <div class="card">
           <div class="card-content">
-            <div class="card-body card-dashboard">
+            <div class="card-body card-dashboard p-0">
               <div class="table-responsive">
                 <table class="table table-striped">
                   <thead>
                     <tr>
-                      <th>
+                      <th v-if="!showDeletedItems"  >
                         <fieldset class="checkbox">
                           <div class="vs-checkbox-con vs-checkbox-primary">
                             <input
@@ -86,15 +87,15 @@
                       <th v-for="(col, index) in columns" :key="index">
                         {{ col.label }}
                       </th>
-                      <th>Actions</th>
+                      <th v-if="!showDeletedItems">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
+                    <tr 
                       v-for="(item, rowIndex) in filteredData"
                       :key="rowIndex"
                     >
-                      <td>
+                      <td v-if="!showDeletedItems">
                         <fieldset class="checkbox">
                           <div class="vs-checkbox-con vs-checkbox-primary">
                             <input
@@ -114,7 +115,7 @@
                       <td v-for="(col, colIndex) in columns" :key="colIndex">
                         {{ item[col.key] }}
                       </td>
-                      <td>
+                      <td v-if="!showDeletedItems">
                         <button
                           class="btn btn-primary btn-icon"
                           @click="editItem(item)"
@@ -293,3 +294,18 @@ const getItems = () => {
   emit("get-items");  // Emit to show deleted items
 };
 </script>
+
+
+<style>
+.card-dashboard {
+  padding: 0;
+  border-left: 3px solid #7367f0;
+  border-radius: 10px;
+}
+.btnOut {
+  padding: 10px 6px !important;
+  font-weight: 600;
+
+}
+
+</style>
