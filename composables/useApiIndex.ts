@@ -27,7 +27,6 @@ export const useApiIndex = ({
           orderBy: order_by,
           orderByDirection: sort,
           paginate: true,
-          delete: false,
           ...params() // 🟢 inject dynamic pagination/search values
         }
       }),

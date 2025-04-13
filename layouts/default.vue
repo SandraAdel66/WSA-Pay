@@ -32,7 +32,8 @@ mounted() {
     "vertical-menu-modern",
     "2-columns",
     "navbar-floating",
-    "footer-static"
+    "footer-static",
+    // "dark-layout",
   );
   document.body.setAttribute("data-open", "click");
   document.body.setAttribute("data-menu", "vertical-menu-modern");

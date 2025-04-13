@@ -23,30 +23,31 @@
             </label>
 
             <button
-              class="btn btn-danger btnOut  ml-1 btn-icon"
+              class="btn btn-danger btnOut ml-1 btn-icon"
               :readonly="selectedIds.length === 0"
               @click="deleteSelected"
             >
-              <i class="feather icon-trash"></i> 
-               multiple
+              <i class="feather icon-trash"></i>
+              multiple
             </button>
-            <button v-if="!showDeletedItems"
+            <button
+              v-if="!showDeletedItems"
               class="btn btn-outline-danger btnOut ml-1 btn-icon"
               @click="deletedItems"
             >
-              <i class="feather icon-delete"></i> 
+              <i class="feather icon-delete"></i>
               deleted items
             </button>
-            <button v-if="showDeletedItems"
+            <button
+              v-if="showDeletedItems"
               class="btn btn-outline-success btnOut ml-1 btn-icon"
               @click="getItems"
             >
-              <i class="feather icon-check"></i> 
-               items
+              <i class="feather icon-check"></i>
+              items
             </button>
           </div>
           <div>
-          
             <label>
               Search:
               <input
@@ -61,96 +62,95 @@
         </div>
 
         <!-- Table -->
-        <div class="card">
-          <div class="card-content">
-            <div class="card-body card-dashboard p-0">
-              <div class="table-responsive">
-                <table class="table table-striped">
-                  <thead>
-                    <tr>
-                      <th v-if="!showDeletedItems"  >
-                        <fieldset class="checkbox">
-                          <div class="vs-checkbox-con vs-checkbox-primary">
-                            <input
-                              type="checkbox"
-                              :checked="isAllSelected"
-                              @change="toggleSelectAll"
-                            />
-                            <span class="vs-checkbox">
-                              <span class="vs-checkbox--check">
-                                <i class="vs-icon feather icon-check"></i>
-                              </span>
-                            </span>
-                          </div>
-                        </fieldset>
-                      </th>
-                      <th v-for="(col, index) in columns" :key="index">
-                        <span>
-                          {{ col.label }} 
+        <div class="table-responsive">
+          <table
+            class="table data-list-view dataTable no-footer dt-checkboxes-select spaced-table p-0"
+          >
+            <thead>
+              <tr>
+                <th v-if="!showDeletedItems" @change="toggleSelectAll">
+                  <fieldset class="checkbox">
+                    <div class="vs-checkbox-con vs-checkbox-primary ">
+                      <input
+                        type="checkbox"
+                        :checked="isAllSelected"
+                        
+                      />
+                      <span class="vs-checkbox ml-1">
+                        <span class="vs-checkbox--check">
+                          <i class="vs-icon feather icon-check"></i>
                         </span>
-                        <span>
-                          <a href="javascript:void(0)" class="ml-1" @click="sortData(col.key, 'asc')">
-                          <i class="feather icon-arrow-up"></i>
-                        </a>
-                        <a href="javascript:void(0)" class="" @click="sortData(col.key, 'desc')">
-
-                          <i class="feather icon-arrow-down"></i>
-                        </a>
-                        </span>
-
-                      </th>
-                      <th v-if="!showDeletedItems">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr 
-                      v-for="(item, rowIndex) in filteredData"
-                      :key="rowIndex"
+                      </span>
+                    </div>
+                  </fieldset>
+                </th>
+                <th v-for="(col, index) in columns" :key="index">
+                  <span>
+                    {{ col.label }}
+                  </span>
+                  <span>
+                    <a
+                      href="javascript:void(0)"
+                      class="ml-1"
+                      @click="sortData(col.key, 'asc')"
                     >
-                      <td v-if="!showDeletedItems">
-                        <fieldset class="checkbox">
-                          <div class="vs-checkbox-con vs-checkbox-primary">
-                            <input
-                              type="checkbox"
-                              :value="item.id"
-                              :checked="selectedIds.includes(item.id)"
-                              @change="toggleSingleSelect(item.id)"
-                            />
-                            <span class="vs-checkbox">
-                              <span class="vs-checkbox--check">
-                                <i class="vs-icon feather icon-check"></i>
-                              </span>
-                            </span>
-                          </div>
-                        </fieldset>
-                      </td>
-                      <td v-for="(col, colIndex) in columns" :key="colIndex">
-                        {{ item[col.key] }}
-                      </td>
-                      
-                      <td v-if="!showDeletedItems">
-                        <button
-                          class="btn btn-primary btn-icon"
-                          @click="editItem(item)"
-                        >
-                          <i class="feather icon-edit"></i>
-                        </button>
-                        <button
-                          class="btn btn-danger ml-1 btn-icon"
-                          @click="confirmDelete(item.id)"
-                        >
-                          <i class="feather icon-trash"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr v-if="filteredData.length === 0">
-                      <td :colspan="columns.length + 1">No data available</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+                      <i class="feather icon-arrow-up"></i>
+                    </a>
+                    <a
+                      href="javascript:void(0)"
+                      class=""
+                      @click="sortData(col.key, 'desc')"
+                    >
+                      <i class="feather icon-arrow-down"></i>
+                    </a>
+                  </span>
+                </th>
+                <th v-if="!showDeletedItems">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, rowIndex) in filteredData" :key="rowIndex"   :class="{ selected: selectedIds.includes(item.id) }"              >
+                <td v-if="!showDeletedItems">
+                  <fieldset class="checkbox">
+                    <div class="vs-checkbox-con vs-checkbox-primary">
+                      <input
+                        type="checkbox"
+                        :value="item.id"
+                        :checked="selectedIds.includes(item.id)"
+                        @change="toggleSingleSelect(item.id)"
+                      />
+                      <span class="vs-checkbox">
+                        <span class="vs-checkbox--check">
+                          <i class="vs-icon feather icon-check"></i>
+                        </span>
+                      </span>
+                    </div>
+                  </fieldset>
+                </td>
+                <td v-for="(col, colIndex) in columns" :key="colIndex">
+                  {{ item[col.key] }}
+                </td>
+
+                <td v-if="!showDeletedItems">
+                  <button
+                    class="btn btn-primary btn-icon"
+                    @click="editItem(item)"
+                  >
+                    <i class="feather icon-edit"></i>
+                  </button>
+                  <button
+                    class="btn btn-danger ml-1 btn-icon"
+                    @click="confirmDelete(item.id)"
+                  >
+                    <i class="feather icon-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="filteredData.length === 0">
+                <td :colspan="columns.length + 1">No data available</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Pagination -->
@@ -279,51 +279,64 @@ const toggleSingleSelect = (id: string | number) => {
 
 // Handle Edit Button Click
 const editItem = (item) => {
-  emit("edit-item", item);  // Emit the selected item to parent for further editing
+  emit("edit-item", item); // Emit the selected item to parent for further editing
 };
 
 // Confirm Delete for selected Item
 const confirmDelete = (id) => {
-  emit("delete-item", id);  // Emit the ID for deletion
-
+  emit("delete-item", id); // Emit the ID for deletion
 };
 
 // Handle Deleting Selected Items
 const deleteSelected = () => {
   if (selectedIds.value.length === 0) return;
-  emit("delete-selected", selectedIds.value);  // Emit selected IDs to delete
-
+  emit("delete-selected", selectedIds.value); // Emit selected IDs to delete
 };
 
 // Handle Deleted Items
 const deletedItems = () => {
-  showDeletedItems.value = true;  // Toggle deleted items view
-  emit("deleted-items");  // Emit to show deleted items
+  showDeletedItems.value = true; // Toggle deleted items view
+  emit("deleted-items"); // Emit to show deleted items
 };
 
 // Handle Deleted Items
 const getItems = () => {
-  showDeletedItems.value = false;  // Toggle deleted items view
-  emit("get-items");  // Emit to show deleted items
+  showDeletedItems.value = false; // Toggle deleted items view
+  emit("get-items"); // Emit to show deleted items
 };
 
 const sortData = (key: string, sort: string) => {
-
-emit("sort-data", { key, sort });
+  emit("sort-data", { key, sort });
 };
 </script>
 
 
 <style>
-.card-dashboard {
-  padding: 0;
-  border-left: 3px solid #7367f0;
-  border-radius: 10px;
-}
+
 .btnOut {
   padding: 10px 6px !important;
   font-weight: 600;
+}
+.spaced-table {
+  border-collapse: separate;
+  border-spacing: 0 10px; /* horizontal: 0, vertical: 10px */
+}
+table.data-list-view.dataTable tbody td, table.data-thumb-view.dataTable tbody td {
+    padding: 15px;
 
+}
+.vs-checkbox-con .vs-checkbox {
+
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.vs-checkbox-con input:checked ~ .vs-checkbox .vs-checkbox--check .vs-icon {
+    -webkit-transform: translate(0);
+    -ms-transform: translate(0);
+    transform: translate(0);
+    line-height: 1;
+    opacity: 1;
 }
 
 </style>

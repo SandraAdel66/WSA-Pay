@@ -7,7 +7,6 @@
     @openModal="openAddModal"
   />
 
-  <!-- Modal -->
   <Modal
     :showModal="showModal"
     @update:showModal="showModal = $event"
@@ -29,156 +28,155 @@
     @edit-item="openEditModal"
     @delete-item="handleDeleteItem"
     @delete-selected="handleDeleteSelected"
-    @deleted-items="fetchDeletedItems"
-    @get-items="fetchAllItems"
+    @deleted-items="showDeletedItems"
+    @get-items="showAllItems"
     @sort-data="handleSortData"
   />
 </template>
 
 <script setup>
-import { ref } from "vue";
-import Breadcrumb from "@/components/theme/Breadcrumb.vue";
-import Modal from "@/components/theme/Modal.vue";
-import Table from "@/components/theme/Table.vue";
+import { ref, watch } from 'vue'
+import { useNuxtApp } from '#app'
+import Breadcrumb from '@/components/theme/Breadcrumb.vue'
+import Modal from '@/components/theme/Modal.vue'
+import Table from '@/components/theme/Table.vue'
 
-const { $swal } = useNuxtApp();
+const { $swal } = useNuxtApp()
 
-// Refs
-const showModal = ref(false);
-const modalTitle = ref("");
-const apiTitle = ref("add");
-const selectedId = ref(null);
-const formFields = ref([]);
-const showDeleted = ref(false);
-const currentPage = ref(1);
-const perPage = ref(5);
-const search = ref("");
+// Refs & Reactive States
+const showModal = ref(false)
+const modalTitle = ref("")
+const apiTitle = ref("add")
+const selectedId = ref(null)
+const formFields = ref([])
 
-// Table columns
+const currentPage = ref(1)
+const perPage = ref(5)
+const search = ref("")
+const sortColumn = ref(null)
+const sortDirection = ref(null)
+const showDeleted = ref(false)
+
+const admins = ref(null)
+
+// Table Columns
 const columns = [
-  { label: 'Name', key: 'name' },
-  { label: 'Email', key: 'email' },
-];
+  { label: "Name", key: "name" },
+  { label: "Email", key: "email" },
 
-// Modal form fields
+]
+
+// Modal Form Fields Config
 const formFieldsConfig = [
-  { name: "name", label: "Name", type: "text", placeholder: "Enter your name", required: true, class: "form-control" },
-  { name: "email", label: "Email", type: "email", placeholder: "Enter your email", required: true, class: "form-control" },
+  { name: "name", label: "Name", type: "text", placeholder: "Enter name", required: true, class: "form-control" },
+  { name: "email", label: "Email", type: "email", placeholder: "Enter email", required: true, class: "form-control" },
   { name: "password", label: "Password", type: "password", required: false, class: "form-control" },
-];
 
-// Fetch data
-const { data: admins, refresh } = useApiIndex({
+]
+
+// API Data Fetch
+const { data, refresh } = useApiIndex({
   api: "admin",
   key: "admins-list",
-  watch: [currentPage, perPage, search],
+  watch: [currentPage, perPage, search, sortColumn, sortDirection, showDeleted],
   params: () => ({
     page: currentPage.value,
     per_page: perPage.value,
     search: search.value,
+    order_by: sortColumn.value,
+    sort: sortDirection.value,
+    deleted: showDeleted.value,
   }),
-});
+})
 
-// ========== Modal Handlers ==========
+// Sync data on change or page reload
+watch(data, (newData) => {
+  admins.value = newData
+}, { immediate: true })
+
+// Page Meta
+definePageMeta({
+  layout: "default",
+  middleware: "auth",
+  title: "Admins",
+})
+
+// ========== Modal Functions ==========
 const openAddModal = () => {
-  modalTitle.value = "Add Admin";
-  apiTitle.value = "add";
-  selectedId.value = null;
-  formFields.value = formFieldsConfig.map(field => ({ ...field, value: "" }));
-  showModal.value = true;
-};
+  modalTitle.value = "Add Admin"
+  apiTitle.value = "add"
+  selectedId.value = null
+  formFields.value = formFieldsConfig.map(f => ({ ...f, value: "" }))
+  showModal.value = true
+}
 
 const openEditModal = (item) => {
-  modalTitle.value = "Edit Admin";
-  apiTitle.value = "update";
-  selectedId.value = item.id;
-  formFields.value = formFieldsConfig.map(field => ({
-    ...field,
-    value: field.name === "password" ? "" : item[field.name],
-  }));
-  showModal.value = true;
-};
+  modalTitle.value = "Edit Admin"
+  apiTitle.value = "update"
+  selectedId.value = item.id
+  formFields.value = formFieldsConfig.map(f => ({
+    ...f,
+    value: f.name === "password" ? "" : item[f.name]
+  }))
+  showModal.value = true
+}
 
 // ========== Table Handlers ==========
 const handlePageChange = (url) => {
-  const page = new URL(url).searchParams.get("page");
-  if (page) currentPage.value = Number(page);
-};
+  const page = new URL(url).searchParams.get("page")
+  if (page) currentPage.value = Number(page)
+}
 
 const handlePerPageChange = (value) => {
-  perPage.value = Number(value);
-  currentPage.value = 1;
-};
+  perPage.value = Number(value)
+}
 
 const handleSearchChange = (value) => {
-  search.value = value;
-  currentPage.value = 1;
-};
+  search.value = value
+}
+
+const handleSortData = (column) => {
+  sortColumn.value = column.key
+  sortDirection.value = column.sort
+  
+  
+}
 
 // ========== Deletion ==========
 const handleDeleteItem = async (id) => {
   if (await confirmDelete()) {
-    const { data } = await useApiDelete({ api: "admin", ids: [id] });
+    const { data } = await useApiDelete({ api: "admin", ids: [id] })
     if (data) {
-      showDeleteSuccess();
-      refresh();
+      showDeleteSuccess()
+      refresh()
     }
   }
-};
+}
 
 const handleDeleteSelected = async (ids) => {
   if (await confirmDelete(ids.length)) {
-    const { data } = await useApiDelete({ api: "admin", ids });
+    const { data } = await useApiDelete({ api: "admin", ids })
     if (data) {
-      showDeleteSuccess();
-      refresh();
+      showDeleteSuccess()
+      refresh()
     }
   }
-};
+}
 
-// ========== Sorting and Filter ==========
-const handleSortData = (column) => {
-  return useApiIndex({
-    api: "admin",
-    key: "admins-list",
-    order_by: column.key,
-    sort: column.sort,
-    params: () => ({
-      page: currentPage.value,
-      per_page: perPage.value,
-      search: search.value,
-      delete: showDeleted.value,
-    }),
-  });
-};
+// ========== Toggle Deleted ==========
+const showDeletedItems = () => {
+  showDeleted.value = true
+  currentPage.value = 1
+}
 
-// ========== Deleted / All Items ==========
-const fetchDeletedItems = () => {
-  showDeleted.value = true;
-  return fetchItems("admins-deleted-list");
-};
-
-const fetchAllItems = () => {
-  showDeleted.value = false;
-  return fetchItems("admins-deleted-list");
-};
-
-const fetchItems = (key) => {
-  return useApiIndex({
-    api: "admin",
-    key,
-    params: () => ({
-      page: currentPage.value,
-      per_page: perPage.value,
-      search: search.value,
-      delete: showDeleted.value,
-    }),
-  });
-};
+const showAllItems = () => {
+  showDeleted.value = false
+  currentPage.value = 1
+}
 
 // ========== Alerts ==========
 const confirmDelete = async (count = 1) => {
-  const confirm = await $swal.fire({
+  const result = await $swal.fire({
     title: "Are you sure?",
     text: `You’re deleting ${count} item(s)!`,
     icon: "warning",
@@ -188,12 +186,12 @@ const confirmDelete = async (count = 1) => {
     confirmButtonText: "Yes, delete it!",
     customClass: { popup: "custom-swal-popup" },
     didOpen: () => {
-      const popup = document.querySelector(".swal2-popup");
-      if (popup) popup.style.gridRow = "1";
-    },
-  });
-  return confirm.isConfirmed;
-};
+      const popup = document.querySelector(".swal2-popup")
+      if (popup) popup.style.gridRow = "1"
+    }
+  })
+  return result.isConfirmed
+}
 
 const showDeleteSuccess = () => {
   $swal.fire({
@@ -203,20 +201,13 @@ const showDeleteSuccess = () => {
     confirmButtonText: "OK",
     customClass: { popup: "custom-swal-popup" },
     didOpen: () => {
-      const popup = document.querySelector(".swal2-popup");
-      if (popup) popup.style.gridRow = "1";
-    },
-  });
-};
-
-// ========== Meta ==========
-definePageMeta({
-  layout: "default",
-  middleware: "auth",
-  title: "Admins",
-});
+      const popup = document.querySelector(".swal2-popup")
+      if (popup) popup.style.gridRow = "1"
+    }
+  })
+}
 </script>
 
 <style scoped>
-/* Add your custom styles here */
+/* Add custom styles here if needed */
 </style>

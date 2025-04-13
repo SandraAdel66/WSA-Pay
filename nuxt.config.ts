@@ -61,29 +61,52 @@ export default defineNuxtConfig({
         { name: 'author', content: 'PIXINVENT' },
       ],
       link: [
+        // Favicons
         { rel: 'apple-touch-icon', href: '/app-assets/images/ico/apple-icon-120.html' },
         { rel: 'icon', type: 'image/x-icon', href: '/app-assets/images/ico/favicon.ico' },
+      
+        // Fonts
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600' },
+      
+        // Vendor CSS
         { rel: 'stylesheet', href: '/app-assets/vendors/css/vendors.min.css' },
+        { rel: 'stylesheet', href: '/app-assets/vendors/css/forms/select/select2.min.css' },
+        { rel: 'stylesheet', href: '/app-assets/vendors/css/extensions/sweetalert2.min.css' },
+
+        { rel: 'stylesheet', href: '/app-assets/vendors/css/tables/datatable/datatables.min.css' },
+        { rel: 'stylesheet', href: '/app-assets/vendors/css/file-uploaders/dropzone.min.css' },
+        { rel: 'stylesheet', href: '/app-assets/vendors/css/tables/datatable/extensions/dataTables.checkboxes.css' },
         { rel: 'stylesheet', href: '/app-assets/vendors/css/charts/apexcharts.css' },
         { rel: 'stylesheet', href: '/app-assets/vendors/css/extensions/tether-theme-arrows.css' },
         { rel: 'stylesheet', href: '/app-assets/vendors/css/extensions/tether.min.css' },
         { rel: 'stylesheet', href: '/app-assets/vendors/css/extensions/shepherd-theme-default.css' },
+      
+        // Theme CSS
         { rel: 'stylesheet', href: '/app-assets/css/bootstrap.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/bootstrap-extended.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/colors.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/components.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/themes/dark-layout.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/themes/semi-dark-layout.min.css' },
+      
+        // Page-specific CSS
         { rel: 'stylesheet', href: '/app-assets/css/core/menu/menu-types/vertical-menu.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/core/colors/palette-gradient.min.css' },
+        { rel: 'stylesheet', href: '/app-assets/css/pages/data-list-view.min.css' },
+        { rel: 'stylesheet', href: '/app-assets/css/plugins/file-uploaders/dropzone.min.css' },
+      
+        // Optional analytics/tour page styles (if used)
         { rel: 'stylesheet', href: '/app-assets/css/pages/dashboard-analytics.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/pages/card-analytics.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/plugins/tour/tour.min.css' },
+      
+        // Custom styles
         { rel: 'stylesheet', href: '/assets/css/style.css' }
       ],
+      
       script: [
         { src: '/app-assets/vendors/js/vendors.min.js', defer: true },
+        { src: '/app-assets/vendors/js/extensions/dropzone.min.js' },
         { src: '/app-assets/vendors/js/charts/apexcharts.min.js', defer: true },
         { src: '/app-assets/vendors/js/extensions/tether.min.js', defer: true },
         { src: '/app-assets/vendors/js/extensions/shepherd.min.js', defer: true },
@@ -95,6 +118,7 @@ export default defineNuxtConfig({
         { src: '/app-assets/js/scripts/pages/dashboard-analytics.min.js', defer: true },
 
       ]
+      
 
     }
   }
