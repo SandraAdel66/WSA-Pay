@@ -85,7 +85,19 @@
                         </fieldset>
                       </th>
                       <th v-for="(col, index) in columns" :key="index">
-                        {{ col.label }}
+                        <span>
+                          {{ col.label }} 
+                        </span>
+                        <span>
+                          <a href="javascript:void(0)" class="ml-1" @click="sortData(col.key, 'asc')">
+                          <i class="feather icon-arrow-up"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="" @click="sortData(col.key, 'desc')">
+
+                          <i class="feather icon-arrow-down"></i>
+                        </a>
+                        </span>
+
                       </th>
                       <th v-if="!showDeletedItems">Actions</th>
                     </tr>
@@ -197,6 +209,7 @@ const emit = defineEmits([
   "change-search",
   "change-page",
   "update-selected",
+  "sort-data"
 ]);
 
 const localPerPage = ref(10);
@@ -263,7 +276,11 @@ const toggleSingleSelect = (id: string | number) => {
     selectedIds.value.push(id);
   }
 };
+// Sort data based on column key
+const sortData = (key: string, sort: string) => {
 
+  emit("sort-data", { key, sort });
+};
 // Handle Edit Button Click
 const editItem = (item) => {
   emit("edit-item", item);  // Emit the selected item to parent for further editing
@@ -293,6 +310,9 @@ const getItems = () => {
   showDeletedItems.value = false;  // Toggle deleted items view
   emit("get-items");  // Emit to show deleted items
 };
+
+// Handle Sorting
+
 </script>
 
 

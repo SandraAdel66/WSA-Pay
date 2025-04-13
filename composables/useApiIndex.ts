@@ -1,13 +1,17 @@
 export const useApiIndex = ({
   api,
-  key = '',
+  key,
+  order_by,
   lazy = false,
   server = true,
   watch = [],
-  params = () => ({})
+  params = () => ({}),
+  sort
 }: {
   api: string;
   key?: string;
+  sort?: string;
+  order_by?: string;
   lazy?: boolean;
   server?: boolean;
   watch?: any[];
@@ -20,8 +24,8 @@ export const useApiIndex = ({
         method: 'POST',
         body: {
           filters: {},
-          orderBy: 'id',
-          orderByDirection: 'desc',
+          orderBy: order_by || 'created_at',
+          orderByDirection: sort || 'desc',
           paginate: true,
           delete: false,
           ...params() // 🟢 inject dynamic pagination/search values
