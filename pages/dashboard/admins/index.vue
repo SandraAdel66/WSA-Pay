@@ -4,7 +4,7 @@
     :items="[{ label: 'List of admins', to: '/admins' }]"
     :add="true"
     :filters="false"
-    @openModal="handleOpenModal"
+    @openModal="openAddModal"
   />
 
   <!-- Modal -->
@@ -12,9 +12,9 @@
     :showModal="showModal"
     @update:showModal="showModal = $event"
     :formFields="formFields"
-    :title="title"
+    :title="modalTitle"
     :apiTitle="apiTitle"
-    :id="id"
+    :id="selectedId"
     :refresh="refresh"
   />
 
@@ -26,11 +26,12 @@
     @change-page="handlePageChange"
     @change-per-page="handlePerPageChange"
     @change-search="handleSearchChange"
-    @edit-item="handleEditItem"
+    @edit-item="openEditModal"
     @delete-item="handleDeleteItem"
     @delete-selected="handleDeleteSelected"
-    @deleted-items="getDeletedItems"
-    @get-items="getAllItems"
+    @deleted-items="fetchDeletedItems"
+    @get-items="fetchAllItems"
+    @sort-data="handleSortData"
   />
 </template>
 
@@ -39,100 +40,147 @@ import { ref } from "vue";
 import Breadcrumb from "@/components/theme/Breadcrumb.vue";
 import Modal from "@/components/theme/Modal.vue";
 import Table from "@/components/theme/Table.vue";
+
 const { $swal } = useNuxtApp();
 
-// Reusable constants and state
+// Refs
 const showModal = ref(false);
-const id = ref(null);
-const title = ref("");
+const modalTitle = ref("");
 const apiTitle = ref("add");
+const selectedId = ref(null);
 const formFields = ref([]);
 const showDeleted = ref(false);
+const currentPage = ref(1);
+const perPage = ref(5);
+const search = ref("");
 
+// Table columns
 const columns = [
   { label: 'Name', key: 'name' },
   { label: 'Email', key: 'email' },
 ];
 
+// Modal form fields
 const formFieldsConfig = [
   { name: "name", label: "Name", type: "text", placeholder: "Enter your name", required: true, class: "form-control" },
   { name: "email", label: "Email", type: "email", placeholder: "Enter your email", required: true, class: "form-control" },
   { name: "password", label: "Password", type: "password", required: false, class: "form-control" },
 ];
-const currentPage = ref(1);
-const perPage = ref(5);
-const search = ref("");
-// API Hook for fetching admins
-const { data: admins, pending, error, refresh } = useApiIndex({
+
+// Fetch data
+const { data: admins, refresh } = useApiIndex({
   api: "admin",
   key: "admins-list",
   watch: [currentPage, perPage, search],
-  params: () => ({ page: currentPage.value, per_page: perPage.value, search: search.value }),
+  params: () => ({
+    page: currentPage.value,
+    per_page: perPage.value,
+    search: search.value,
+  }),
 });
 
-
-
-// Handlers
-const handleOpenModal = () => {
-  title.value = "Add Admin";
+// ========== Modal Handlers ==========
+const openAddModal = () => {
+  modalTitle.value = "Add Admin";
+  apiTitle.value = "add";
+  selectedId.value = null;
   formFields.value = formFieldsConfig.map(field => ({ ...field, value: "" }));
   showModal.value = true;
 };
 
-const handleEditItem = (item) => {
-  title.value = "Edit Admin";
+const openEditModal = (item) => {
+  modalTitle.value = "Edit Admin";
   apiTitle.value = "update";
-  showModal.value = true;
-  id.value = item.id;
+  selectedId.value = item.id;
   formFields.value = formFieldsConfig.map(field => ({
     ...field,
     value: field.name === "password" ? "" : item[field.name],
   }));
+  showModal.value = true;
 };
 
-// Pagination and Search Handlers
-function handlePageChange(url) {
+// ========== Table Handlers ==========
+const handlePageChange = (url) => {
   const page = new URL(url).searchParams.get("page");
   if (page) currentPage.value = Number(page);
-}
+};
 
-function handlePerPageChange(value) {
+const handlePerPageChange = (value) => {
   perPage.value = Number(value);
   currentPage.value = 1;
-}
+};
 
-function handleSearchChange(value) {
+const handleSearchChange = (value) => {
   search.value = value;
   currentPage.value = 1;
-}
+};
 
-// Delete Handlers
-async function handleDeleteItem(id) {
-  const confirm = await confirmDelete();
-  if (confirm) {
-    const { data, error } = await useApiDelete({ api: "admin", ids: [id] });
+// ========== Deletion ==========
+const handleDeleteItem = async (id) => {
+  if (await confirmDelete()) {
+    const { data } = await useApiDelete({ api: "admin", ids: [id] });
     if (data) {
-      showSuccessAlert();
+      showDeleteSuccess();
       refresh();
     }
   }
-}
+};
 
-async function handleDeleteSelected(ids) {
-  const confirm = await confirmDelete(ids.length);
-  if (confirm) {
-    const { data, error } = await useApiDelete({ api: "admin", ids });
+const handleDeleteSelected = async (ids) => {
+  if (await confirmDelete(ids.length)) {
+    const { data } = await useApiDelete({ api: "admin", ids });
     if (data) {
-      showSuccessAlert();
+      showDeleteSuccess();
       refresh();
     }
   }
-}
+};
 
-async function confirmDelete(itemCount = 1) {
+// ========== Sorting and Filter ==========
+const handleSortData = (column) => {
+  return useApiIndex({
+    api: "admin",
+    key: "admins-list",
+    order_by: column.key,
+    sort: column.sort,
+    params: () => ({
+      page: currentPage.value,
+      per_page: perPage.value,
+      search: search.value,
+      delete: showDeleted.value,
+    }),
+  });
+};
+
+// ========== Deleted / All Items ==========
+const fetchDeletedItems = () => {
+  showDeleted.value = true;
+  return fetchItems("admins-deleted-list");
+};
+
+const fetchAllItems = () => {
+  showDeleted.value = false;
+  return fetchItems("admins-deleted-list");
+};
+
+const fetchItems = (key) => {
+  return useApiIndex({
+    api: "admin",
+    key,
+    params: () => ({
+      page: currentPage.value,
+      per_page: perPage.value,
+      search: search.value,
+      delete: showDeleted.value,
+    }),
+  });
+};
+
+// ========== Alerts ==========
+const confirmDelete = async (count = 1) => {
   const confirm = await $swal.fire({
     title: "Are you sure?",
-    text: `You’re deleting ${itemCount} item(s)!`,
+    text: `You’re deleting ${count} item(s)!`,
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#d33",
@@ -145,9 +193,9 @@ async function confirmDelete(itemCount = 1) {
     },
   });
   return confirm.isConfirmed;
-}
+};
 
-function showSuccessAlert() {
+const showDeleteSuccess = () => {
   $swal.fire({
     icon: "success",
     title: "Deleted!",
@@ -159,37 +207,9 @@ function showSuccessAlert() {
       if (popup) popup.style.gridRow = "1";
     },
   });
-}
+};
 
-// Fetch deleted items
-function getDeletedItems() {
-  showDeleted.value = true;
-  return useApiIndex({
-    api: "admin",
-    key: "admins-deleted-list",
-    params: () => ({
-      page: currentPage.value,
-      per_page: perPage.value,
-      search: search.value,
-      delete: showDeleted.value,
-    }),
-  });
-}
-
-function getAllItems() {
-  showDeleted.value = false;
-  return useApiIndex({
-    api: "admin",
-    key: "admins-deleted-list",
-    params: () => ({
-      page: currentPage.value,
-      per_page: perPage.value,
-      search: search.value,
-      delete: showDeleted.value,
-    }),
-  });
-}
-
+// ========== Meta ==========
 definePageMeta({
   layout: "default",
   middleware: "auth",

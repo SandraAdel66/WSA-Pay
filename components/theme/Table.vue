@@ -85,7 +85,19 @@
                         </fieldset>
                       </th>
                       <th v-for="(col, index) in columns" :key="index">
-                        {{ col.label }}
+                        <span>
+                          {{ col.label }} 
+                        </span>
+                        <span>
+                          <a href="javascript:void(0)" class="ml-1" @click="sortData(col.key, 'asc')">
+                          <i class="feather icon-arrow-up"></i>
+                        </a>
+                        <a href="javascript:void(0)" class="" @click="sortData(col.key, 'desc')">
+
+                          <i class="feather icon-arrow-down"></i>
+                        </a>
+                        </span>
+
                       </th>
                       <th v-if="!showDeletedItems">Actions</th>
                     </tr>
@@ -115,6 +127,7 @@
                       <td v-for="(col, colIndex) in columns" :key="colIndex">
                         {{ item[col.key] }}
                       </td>
+                      
                       <td v-if="!showDeletedItems">
                         <button
                           class="btn btn-primary btn-icon"
@@ -292,6 +305,11 @@ const deletedItems = () => {
 const getItems = () => {
   showDeletedItems.value = false;  // Toggle deleted items view
   emit("get-items");  // Emit to show deleted items
+};
+
+const sortData = (key: string, sort: string) => {
+
+emit("sort-data", { key, sort });
 };
 </script>
 
