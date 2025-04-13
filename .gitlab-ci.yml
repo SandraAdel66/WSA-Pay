@@ -1,0 +1,26 @@
+stages:
+  - build
+  - deploy
+
+# Build Stage: Build the Nuxt app
+build:
+  image: node:16  # You can change the node version as needed
+  stage: build
+  script:
+    - npm install
+    - npm run build
+  artifacts:
+    paths:
+      - .output  # Save the .output folder for deployment
+
+# Deploy Stage: Deploy the project to your Contabo server
+deploy:
+  image: ruby:2.7  # Used for SSH and rsync
+  stage: deploy
+  before_script:
+    - apt-get update && apt-get install -y ssh rsync
+  script:
+    - ssh-keyscan -H 195.26.249.199 >> ~/.ssh/known_hosts  # Add your server to known hosts
+    - rsync -avz --delete .output/ root@195.26.249.199:/var/www/vhosts/trexorstore.com/httpdocs/.output
+  only:
+    - master  # Deploy only from the master branch
