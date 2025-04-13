@@ -9,9 +9,10 @@ build:
   script:
     - npm install  # Install dependencies
     - npm run build  # Build the Nuxt app
+    - npm run generate  # Generate static files (this creates the 'dist' folder)
   artifacts:
     paths:
-      - .output  # Save the .output folder for deployment
+      - dist  # Save the dist folder for deployment
     expire_in: 1 hour  # Optionally, specify expiration for artifacts
 
 # Deploy Stage: Deploy the project to your Contabo server
@@ -23,7 +24,7 @@ deploy:
   script:
     # Add the server's SSH key to known_hosts to prevent SSH verification prompt
     - ssh-keyscan -H 195.26.249.199 >> ~/.ssh/known_hosts
-    # Deploy the .output folder to the server using rsync
-    - rsync -avz --delete .output/ root@195.26.249.199:/var/www/vhosts/trexorstore.com/httpdocs/.output
+    # Deploy the dist folder to the server using rsync
+    - rsync -avz --delete dist/ root@195.26.249.199:/var/www/vhosts/trexorstore.com/httpdocs/
   only:
     - master  # Deploy only from the master branch
