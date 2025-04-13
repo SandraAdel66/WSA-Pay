@@ -310,9 +310,7 @@ const getItems = () => {
   emit("get-items"); // Emit to show deleted items
 };
 
-const sortData = (key: string, sort: string) => {
-  emit("sort-data", { key, sort });
-};
+
 
 // Handle Sorting
 
