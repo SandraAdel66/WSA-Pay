@@ -30,6 +30,9 @@
         <button type="button" class="btn btn-primary mar" v-if="add" @click="openModal">
           <i class="feather icon-plus"></i>
         </button>
+        <button type="button" class="btn btn-primary mar" v-if="filter" @click="openModalFilter">
+          <i class="feather icon-filter"></i>
+        </button>
       </div>
     </div>
   </div>
@@ -51,11 +54,18 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  filter: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 // Emitting the event to open the modal
 const openModal = () => {
   emit('openModal', true);
+};
+const openModalFilter = () => {
+  emit('open-filter', true);
 };
 </script>
 
