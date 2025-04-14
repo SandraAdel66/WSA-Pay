@@ -125,7 +125,7 @@ import Toast from "@/components/theme/Toast.vue";
 definePageMeta({
   layout: "auth",
   title: "Login",
-  middleware: "guest",
+  middleware: "auth",
 });
 
 interface Credentials {

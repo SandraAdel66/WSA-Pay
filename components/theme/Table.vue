@@ -127,14 +127,47 @@
                     </div>
                   </fieldset>
                 </td>
-                <td v-for="(col, colIndex) in columns" :key="colIndex">
+                <td
+                  v-for="(col, colIndex) in columns"
+                  :key="colIndex"
+                  class="p-0"
+                >
+                  <!-- Custom user info for first column on members page -->
                   <UserInfo
-                    :user="item[col.key]"
+                    :name="item.name"
+                    :countryName="item.country?.name || 'N/A'"
+                    :city="item.city || 'N/A'"
+                    :countryFlag="item.country?.flag "
+                    :email="item.email"
                     v-if="
-                      colIndex == 0 &&
+                      colIndex === 0 &&
                       route.path.startsWith('/dashboard/members')
                     "
                   />
+
+                  <!-- Status column chip -->
+                  <div v-else-if="col.key === 'status'">
+                    <div
+                      :class="[
+                        'text-bold-600',
+                        'chip',
+                        {
+                          'chip-semi-dark': item[col.key] === 'pending',
+                          'chip-success': item[col.key] === 'approved',
+                          'chip-warning': item[col.key] === 'suspended',
+                          'chip-danger': item[col.key] === 'deactivate',
+                        },
+                      ]"
+                    >
+                      <div class="chip-body">
+                        <div class="chip-text capitalize">
+                          {{ item[col.key] }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Default display -->
                   <span v-else>
                     {{ item[col.key] }}
                   </span>

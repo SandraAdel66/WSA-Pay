@@ -3,20 +3,22 @@
     <div class="parent-image">
       <img
         src="https://api.wsa-network.com/storage/media/2023/10/11/746/PFS-100.jpg"
-        alt=""
+        class="companYlogo"
         srcset=""
       />
     </div>
     <div>
       <h4 class="text-bold-600">{{ name ?? "F.H.BERTLING AB" }}</h4>
       <p class="text-bold-700 fx-2">
-        {{ name ?? "Sweden" }}, <span class="primary">Egypt</span>
+        <img :src="countryFlag" width="20" >
+        {{ city ?? "Sweden" }}, <span class="primary">{{countryName}}</span>
       </p>
+      
       <p
         class="text-bold-500 cursor-pointer email"
         @click="copyToClipboard(email || 'kennet.sjostrand@bertling.com')"
       >
-        {{ email || "kennet.sjostrand@bertling.com" }}
+        {{ email }}
       </p>
     </div>
   </div>
@@ -29,8 +31,29 @@ const notify = useNotify()
 
 // Props
 const props = defineProps({
-  name: { type: String, default: "Sweden" },
-  email: { type: String, default: "kennet.sjostrand@bertling.com" },
+
+    name: {
+      type: String,
+      default: null,
+    },
+    email: {
+      type: String,
+      default: null,
+    },
+    city: {
+        type: String,
+        default: null,
+    },
+    countryFlag: {
+        type: String,
+        default: null,
+    },
+    
+    countryName: {
+        type: String,
+        default: null,
+    },
+    
 });
 
 const copyToClipboard = () => {
@@ -40,6 +63,8 @@ const copyToClipboard = () => {
     notify.error('Failed to copy')
   })
 }
+
+
 </script>
 
 <style scoped>
@@ -51,6 +76,7 @@ const copyToClipboard = () => {
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
+  justify-content: left;
 }
 .parent-image {
   width: 100px;
@@ -58,7 +84,7 @@ const copyToClipboard = () => {
   display: flex;
   align-items: center;
 }
-.table-report img {
+.table-report .companYlogo {
   width: 100%;
   border-radius: 5px;
   border-width: 1px;
