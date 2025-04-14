@@ -43,14 +43,16 @@
         <!-- Members Dropdown -->
         <li
           class="nav-item"
-          :class="{ open: route.path.startsWith('/dashboard/members') }"
+          :class="{ open: isOpen || route.path.startsWith('/dashboard/members') }"
         >
-          <a href="javascript:void(0)">
+          <a href="javascript:void(0)" @click="toggleMenu">
             <i class="feather icon-users"></i>
             <span class="menu-title">Members</span>
-            <span class="badge badge badge-warning badge-pill float-right mr-2"
-              >2</span
-            >
+            <i
+              class="feather  float-right mr-0"
+              :class="{ 'icon-chevron-right': isOpen, 'icon-chevron-down': !isOpen }"
+            ></i>
+
           </a>
           <ul class="menu-content">
             <li :class="{ active: route.path === '/dashboard/members' }">
@@ -59,9 +61,7 @@
                 <span class="menu-item">List</span>
               </NuxtLink>
             </li>
-            <li
-              :class="{ active: route.path === '/dashboard/members/pending' }"
-            >
+            <li :class="{ active: route.path === '/dashboard/members/pending' }">
               <NuxtLink to="/dashboard/members/pending">
                 <i class="feather icon-circle"></i>
                 <span class="menu-item">Pending</span>
@@ -88,6 +88,14 @@
 
 <script setup>
 import { useRoute } from "vue-router";
+import { ref } from "vue";
 
 const route = useRoute();
+const isOpen = ref(false);
+
+// Toggle the state of the dropdown menu
+function toggleMenu() {
+  isOpen.value = !isOpen.value;
+}
 </script>
+

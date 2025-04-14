@@ -16,6 +16,7 @@
     :id="selectedId"
     :refresh="refresh"
   />
+  
 
   <Table
     v-if="admins && admins.data"
@@ -75,7 +76,7 @@ const formFieldsConfig = [
 ]
 
 // API Data Fetch
-const { data, refresh } = useApiIndex({
+const { data, refresh} = useApiIndex({
   api: "admin",
   key: "admins-list",
   watch: [currentPage, perPage, search, sortColumn, sortDirection, showDeleted],

@@ -23,14 +23,8 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
   },
   
-  modules: [
-    '@nuxt/content',
-    '@nuxt/fonts',
-    '@nuxt/icon',
-    '@nuxt/image',
-    '@nuxt/scripts',
-    '@pinia/nuxt',
-  ],
+  modules: ['@nuxt/content', '@nuxt/fonts', '@nuxt/icon',
+     '@nuxt/image', '@nuxt/scripts', '@pinia/nuxt', '@nuxt/ui'],
 
   image: {
     inject: true,

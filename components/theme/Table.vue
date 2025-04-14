@@ -70,12 +70,8 @@
               <tr>
                 <th v-if="!showDeletedItems" @change="toggleSelectAll">
                   <fieldset class="checkbox">
-                    <div class="vs-checkbox-con vs-checkbox-primary ">
-                      <input
-                        type="checkbox"
-                        :checked="isAllSelected"
-                        
-                      />
+                    <div class="vs-checkbox-con vs-checkbox-primary">
+                      <input type="checkbox" :checked="isAllSelected" />
                       <span class="vs-checkbox ml-1">
                         <span class="vs-checkbox--check">
                           <i class="vs-icon feather icon-check"></i>
@@ -109,7 +105,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, rowIndex) in filteredData" :key="rowIndex"   :class="{ selected: selectedIds.includes(item.id) }"              >
+              <tr
+                v-for="(item, rowIndex) in filteredData"
+                :key="rowIndex"
+                :class="{ selected: selectedIds.includes(item.id) }"
+              >
                 <td v-if="!showDeletedItems">
                   <fieldset class="checkbox">
                     <div class="vs-checkbox-con vs-checkbox-primary">
@@ -128,7 +128,16 @@
                   </fieldset>
                 </td>
                 <td v-for="(col, colIndex) in columns" :key="colIndex">
-                  {{ item[col.key] }}
+                  <UserInfo
+                    :user="item[col.key]"
+                    v-if="
+                      colIndex == 0 &&
+                      route.path.startsWith('/dashboard/members')
+                    "
+                  />
+                  <span v-else>
+                    {{ item[col.key] }}
+                  </span>
                 </td>
 
                 <td v-if="!showDeletedItems">
@@ -189,10 +198,12 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
-
+import UserInfo from "@/components/theme/UserInfo.vue";
+import { useRoute } from "vue-router";
+const route = useRoute();
 const props = defineProps({
   data: {
-    type: Array,
+    type: Array as () => Array<Record<string, any>>, // Define the type of items in the data array
     required: true,
   },
   meta: {
@@ -210,7 +221,7 @@ const emit = defineEmits([
   "change-search",
   "change-page",
   "update-selected",
-  "sort-data"
+  "sort-data",
 ]);
 
 const localPerPage = ref(10);
@@ -279,7 +290,6 @@ const toggleSingleSelect = (id: string | number) => {
 };
 // Sort data based on column key
 const sortData = (key: string, sort: string) => {
-
   emit("sort-data", { key, sort });
 };
 // Handle Edit Button Click
@@ -310,15 +320,11 @@ const getItems = () => {
   emit("get-items"); // Emit to show deleted items
 };
 
-
-
 // Handle Sorting
-
 </script>
 
 
 <style>
-
 .btnOut {
   padding: 10px 6px !important;
   font-weight: 600;
@@ -327,22 +333,20 @@ const getItems = () => {
   border-collapse: separate;
   border-spacing: 0 10px; /* horizontal: 0, vertical: 10px */
 }
-table.data-list-view.dataTable tbody td, table.data-thumb-view.dataTable tbody td {
-    padding: 15px;
-
+table.data-list-view.dataTable tbody td,
+table.data-thumb-view.dataTable tbody td {
+  padding: 10px;
 }
 .vs-checkbox-con .vs-checkbox {
-
   width: 1.3rem;
   height: 1.3rem;
 }
 
 .vs-checkbox-con input:checked ~ .vs-checkbox .vs-checkbox--check .vs-icon {
-    -webkit-transform: translate(0);
-    -ms-transform: translate(0);
-    transform: translate(0);
-    line-height: 1;
-    opacity: 1;
+  -webkit-transform: translate(0);
+  -ms-transform: translate(0);
+  transform: translate(0);
+  line-height: 1;
+  opacity: 1;
 }
-
 </style>

@@ -3,13 +3,40 @@
     title="Memebers"
     :items="[{ label: 'List of members', to: '/members' }]"
     :add="true"
-    :filter="filter = true"
+    :filter="(filter = true)"
     @open-filter="openModalFilter"
     @openModal="openAddModal"
-
   />
-
-
+  <div class="row">
+    <Card
+      count="1.2M"
+      label="Pending"
+      iconClass="feather icon-clock"
+      colorMain="text-primary"
+      bgClss="bg-rgba-primary"
+    />
+    <Card
+      count="1.2M"
+      label="Approved"
+      iconClass="feather icon-users"
+      colorMain="text-success"
+      bgClss="bg-rgba-success"
+    />
+    <Card
+      count="1.2M"
+      label="Suspended"
+      iconClass="feather icon-circle"
+      colorMain="text-primary"
+      bgClss="bg-rgba-primary"
+    />
+    <Card
+      count="1.2M"
+      label="Deactivate"
+      iconClass="feather icon-lock"
+      colorMain="text-danger"
+      bgClss="bg-rgba-danger"
+    />
+  </div>
 
   <Modal
     :showModal="showModal"
@@ -26,7 +53,6 @@
     :items="filterItems"
     :modalFilter="modalFilter"
     @close="modalFilter = false"
-    
   />
   <Table
     v-if="members && members.data"
@@ -51,6 +77,7 @@ import { useNuxtApp } from "#app";
 import Breadcrumb from "@/components/theme/Breadcrumb.vue";
 import Modal from "@/components/theme/Modal.vue";
 import ModalFilter from "@/components/theme/ModalFilter.vue";
+import Card from "@/components/theme/Card.vue";
 
 import Table from "@/components/theme/Table.vue";
 
@@ -105,7 +132,6 @@ const filterItems = [
     class: "form-control",
   },
 ];
-
 
 // Table Columns
 const columns = [
@@ -194,9 +220,8 @@ const openEditModal = (item) => {
 // ===================================
 
 const openModalFilter = () => {
-  
   modalFilter.value = true;
-}
+};
 // ========== Table Handlers ==========
 const handlePageChange = (url) => {
   const page = new URL(url).searchParams.get("page");
