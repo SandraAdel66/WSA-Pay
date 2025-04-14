@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import type { LocationQueryValue } from 'vue-router';
-import { useToast } from '~/composables/useToast';
-
+import { useNotify } from '~/composables/useNotify'
+const notify = useNotify()
 type Employee = {
   id: number;
   name: string;
@@ -46,12 +46,8 @@ export const useUserStore = defineStore('user', () => {
   
         navigateTo(path || '/dashboard');
   
-        useToast({
-          title: 'Welcome',
-          message: 'Logged in Successfully',
-          type: 'success',
-          duration: 5000,
-        });
+        notify.success('Logged in Successfully')
+
       }
     } catch (err) {
       console.error('Login error:', err);

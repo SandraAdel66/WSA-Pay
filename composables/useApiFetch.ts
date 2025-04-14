@@ -1,4 +1,6 @@
 import type { UseFetchOptions } from "#app";
+import { useNotify } from '~/composables/useNotify'
+const notify = useNotify()
 
 export function useApiFetch<T>(path: string, options: UseFetchOptions<T> = {}) {
     const config = useRuntimeConfig();
@@ -33,12 +35,8 @@ export function useApiFetch<T>(path: string, options: UseFetchOptions<T> = {}) {
         onResponseError({ response }) {
             if (response.status === 401) {
                 const message = response?._data.message || 'Login failed, please try again.';
-                useToast({
-                    title: 'Error',
-                    message,
-                    type: 'error',
-                    duration: 5000,
-                });
+           
+                notify.error(message);
 
                 userStore.setToken();
                 userStore.setUser();

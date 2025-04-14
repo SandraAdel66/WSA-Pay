@@ -1,6 +1,5 @@
 <template>
   <section class="d-flex justify-content-center align-items-center min-vh-100">
-    <Toast />
 
     <div class="d-flex justify-content-center">
       <div class="card pb-3">
@@ -119,7 +118,6 @@
   <script setup lang="ts">
 import { email, required } from "@vuelidate/validators";
 import useVuelidate from "@vuelidate/core";
-import Toast from "@/components/theme/Toast.vue";
   
 
 definePageMeta({
