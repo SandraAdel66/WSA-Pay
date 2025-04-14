@@ -1,23 +1,7 @@
 npm install
-npm run build
+npm run generate
 
 
 If the .output folder is generated successfully locally, you can then try manually uploading the folder to your server using rsync:
 
-rsync -avz .output/ root@195.26.249.199:/var/www/vhosts/trexorstore.com/httpdocs/.output
-
-Then check the server again:
-
-ls /var/www/vhosts/trexorstore.com/httpdocs/.output
-# If the folder is uploaded successfully, you can then try to run the server using the following command:
-pm2 start /var/www/vhosts/trexorstore.com/httpdocs/.output/server/index.mjs
-# If you want to run the server in the background, you can use the following command:
-pm2 start /var/www/vhosts/trexorstore.com/httpdocs/.output/server/index.mjs --name trexorstore
-# If you want to run the server in the background and restart it automatically if it crashes, you can use the following command:
-pm2 start /var/www/vhosts/trexorstore.com/httpdocs/.output/server/index.mjs --name trexorstore --watch
-# If you want to run the server in the background and restart it automatically if it crashes and also log the output to a file, you can use the following command:
-pm2 start /var/www/vhosts/trexorstore.com/httpdocs/.output/server/index.mjs --name trexorstore --watch --log /var/log/trexorstore.log
-# If you want to run the server in the background and restart it automatically if it crashes and also log the output to a file and also send the output to a remote server, you can use the following command:
-pm2 start /var/www/vhosts/trexorstore.com/httpdocs/.output/server/index.mjs --name trexorstore --watch --log /var/log/trexorstore.log --log-date-format 'YYYY-MM-DD HH:mm Z' --log-type json
-# If you want to run the server in the background and restart it automatically if it crashes and also log the output to a file and also send the output to a remote server and also send the output to a remote server using syslog, you can use the following command:
-pm2 start /var/www/vhosts/trexorstore.com/httpdocs/.output/server/index.mjs --name trexorstore --watch --log /var/log/trexorstore.log --log-date-format 'YYYY-MM-DD HH:mm Z' --log-type json --log-syslog
+rsync -avz dist/ root@195.26.249.199:/var/www/vhosts/trexorstore.com/httpdocs/

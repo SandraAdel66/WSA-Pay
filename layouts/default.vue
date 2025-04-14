@@ -8,7 +8,7 @@
       <div class="content-wrapper">
         <div class="content-header row"></div>
         <!-- Replace <router-view /> with <NuxtPage /> -->
-        <NuxtPage />
+        <NuxtPage :transition="{ name: 'fade', mode: 'out-in' }" />
       </div>
     </div>
     <Footer />
