@@ -35,14 +35,163 @@ WE WILL RELEASE FUTURE UPDATES SO IN ORDER TO NOT OVERWRITE YOUR STYLES IT'S BET
   border-top-right-radius: 10px;
 }
 
- 
-.dashboard .card {
-
-  border-radius: 20px;
+.card {
+  border-radius: 15px;
+  box-shadow: 0 1px 8px 0 rgb(0 0 0 / 10%) !important;
 }
 
-.card {
+.btnOut {
+  padding: 10px 6px !important;
+  font-weight: 600;
+}
+.spaced-table {
+  border-collapse: separate;
+  border-spacing: 0 10px; /* horizontal: 0, vertical: 10px */
+}
+table.data-list-view.dataTable tbody td,
+table.data-thumb-view.dataTable tbody td {
+  padding: 10px;
+}
+.vs-checkbox-con .vs-checkbox {
+  width: 1.3rem;
+  height: 1.3rem;
+}
 
-  border-radius: 20px;
- box-shadow: 0 1px 8px 0 rgb(0 0 0 / 10%) !important;
+.vs-checkbox-con input:checked ~ .vs-checkbox .vs-checkbox--check .vs-icon {
+  -webkit-transform: translate(0);
+  -ms-transform: translate(0);
+  transform: translate(0);
+  line-height: 1;
+  opacity: 1;
+}
+.btn-icon {
+  margin: 2px;
+}
+
+.btn-light {
+  background-color: #e2e8f0 !important;
+  border-color: #e2e8f0 !important;
+  color: #4a5568 !important;
+}
+.btn-light:hover {
+  background-color: #cbd5e1 !important;
+  border-color: #cbd5e1 !important;
+  color: #2d3748 !important;
+}
+
+.user-details .text-muted {
+  color: #292929 !important;
+  font-size: 13px;
+}
+
+.user-details table tr {
+  border-top: 1px dashed #eee;
+}
+.user-details .media {
+  border-bottom: 1px dashed #eee;
+  padding-bottom: 10px;
+}
+.user-details .media-body label {
+  font-size: 13px;
+}
+.user-details table tr:first-child {
+  border-top: none;
+}
+.user-details table tr:last-child {
+  border-bottom: none;
+}
+.user-details .d-grid {
+  display: grid;
+}
+
+.user-details .table-text {
+  font-size: 13px;
+}
+
+.user-details .text-secondary {
+  color: #494949 !important;
+  font-weight: 500;
+  font-size: 12px !important;
+}
+.user-details .card-padding {
+  padding: 15px;
+}
+.user-details .card-balance {
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+.user-details .card-title {
+  margin-bottom: 15px;
+  margin-top: 15px;
+  font-size: 15px;
+}
+.user-details .balance-header {
+  border-bottom: 1px dashed #eee;
+  padding: 6px 15px !important;
+  display: flex;
+  align-items: center;
+}
+
+.user-details .balance-header:last-child {
+  border-bottom: none;
+}
+
+/* User Info */
+
+.user-info {
+  max-width: 300px;
+}
+.table-report {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: left;
+}
+.parent-image {
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+}
+.table-report .companYlogo {
+  width: 100%;
+  border-radius: 5px;
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border: 1px solid rgb(197 197 197);
+  background-color: #f8f9fa;
+  padding: 5px;
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  height: 3.5rem;
+}
+.table-report h4 {
+  font-size: 13px;
+  line-height: 0.5;
+  margin-top: 5px;
+}
+
+.table-report p {
+  font-size: 12px;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.table-report b {
+  font-size: 13px;
+}
+.table-report p.font-bold {
+  font-size: 13px;
+}
+
+.email:hover {
+  color: #8a7ff2;
+  text-decoration: underline;
+}
+
+.balance-header h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }

@@ -68,54 +68,5 @@ const copyToClipboard = (email) => {
 </script>
 
 <style scoped>
-.user-info {
-  max-width: 300px;
-}
-.table-report {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: left;
-}
-.parent-image {
-  width: 70px;
-  height: 70px;
-  display: flex;
-  align-items: center;
-}
-.table-report .companYlogo {
-  width: 100%;
-  border-radius: 5px;
-  border-width: 1px;
-  --tw-border-opacity: 1;
-  border: 1px solid rgb(197 197 197);
-  background-color: #f8f9fa;
-  padding: 5px;
-  transition-duration: 0.3s;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  height: 3.5rem;
-}
-.table-report h4 {
-  font-size: 13px;
-  line-height: 0.5;
-  margin-top: 5px;
-}
 
-.table-report p {
-  font-size: 12px;
-  line-height: 1;
-  margin-bottom: 5px;
-}
-.table-report b {
-  font-size: 13px;
-}
-.table-report p.font-bold {
-  font-size: 13px;
-}
-
-.email:hover {
-  color: #8a7ff2;
-  text-decoration: underline;
-}
 </style>

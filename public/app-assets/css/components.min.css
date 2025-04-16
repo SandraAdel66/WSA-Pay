@@ -3357,9 +3357,7 @@ table.dataTable.table-striped tbody tr:nth-of-type(even) {
 .select2 .form-control::focus {
   border-color: #603881 !important;
 }
-table.dataTable {
-  border: 2px solid #f8f8f8;
-}
+
 table.dataTable td,
 table.dataTable th {
   border-bottom: 1px solid #f8f8f8;

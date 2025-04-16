@@ -3,7 +3,7 @@
     <Breadcrumb
       title="Memebers"
       :items="[{ label: 'List of members', to: '/members' }]"
-      :add="false"
+      :add="true"
       :filter="(filter = true)"
       @open-filter="openModalFilter"
       @openModal="openAddModal"
@@ -117,7 +117,6 @@ const showDeleted = ref(false);
 const modalFilter = ref(false);
 const appliedFilters = ref({});
 
-console.log(modalFilter.value);
 
 const members = ref(null);
 

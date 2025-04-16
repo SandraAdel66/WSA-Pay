@@ -59,8 +59,5 @@ onMounted(() => {
   opacity: 0;
 }
 
-/* Custom styles for the page wrapper */
-.page-wrapper {
-  padding: 16px;
-}
+
 </style>
