@@ -3,7 +3,7 @@
     <Breadcrumb
       title="Memebers"
       :items="[{ label: 'List of members', to: '/members' }]"
-      :add="true"
+      :add="false"
       :filter="(filter = true)"
       @open-filter="openModalFilter"
       @openModal="openAddModal"

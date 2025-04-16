@@ -9,15 +9,16 @@
     </div>
     <div>
       <h4 class="text-bold-600">{{ name ?? "F.H.BERTLING AB" }}</h4>
-      <p class="text-bold-700 fx-2">
-        <img :src="countryFlag" width="20" >
+      <p class="text-bold-700 fx-2 ">
+        <img :src="countryFlag" width="20" class="radius-2">
         {{ city ?? "Sweden" }}, <span class="primary">{{countryName}}</span>
       </p>
       
       <p
-        class="text-bold-500 cursor-pointer email"
+        class="text-bold-700 cursor-pointer email"
         @click="copyToClipboard(email)"
       >
+      <i class="feather icon-mail"></i>
         {{ email }}
       </p>
     </div>

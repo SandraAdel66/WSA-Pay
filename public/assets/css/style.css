@@ -132,6 +132,10 @@ table.data-thumb-view.dataTable tbody td {
   align-items: center;
 }
 
+.user-details td{
+  font-size: 13px;
+
+}
 .user-details .balance-header:last-child {
   border-bottom: none;
 }
@@ -183,15 +187,34 @@ table.data-thumb-view.dataTable tbody td {
 .table-report p.font-bold {
   font-size: 13px;
 }
-
+.email{
+  color: #660961;
+}
 .email:hover {
-  color: #8a7ff2;
+  color: #5146b9;
   text-decoration: underline;
 }
-
+.email small {
+  font-weight: bold;
+  font-size: 11px;
+}
 .balance-header h4 {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 0;
   padding-bottom: 0;
 }
+.radius-2 {
+  border-radius: 4px;
+}
+
+.bg-chip {
+  background-color: #e6e6e6; 
+  transition: 0.3s ease-in-out;
+
+  }
+
+  .bg-chip:hover{
+    background-color: #c4c4c4; 
+
+  }

@@ -24,6 +24,7 @@
               @refresh="refresh"
               :id="id"
               :apiTitle="apiTitle"
+              :apiName="apiName"
             />
           </div>
         </div>
@@ -42,6 +43,7 @@ const props = defineProps({
   formFields: { type: Array, default: () => [] },
   apiTitle: { type: String, default: '' },
   title: { type: String, default: 'Modal Title' },
+  apiName: { type: String, default: '' },
   id: { type: [String, Number], default: null },
   refresh: { type: Function, default: () => {} },
 });

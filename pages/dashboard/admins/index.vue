@@ -14,6 +14,7 @@
     :title="modalTitle"
     :apiTitle="apiTitle"
     :id="selectedId"
+    :apiName="'admin'"
     :refresh="refresh"
   />
   

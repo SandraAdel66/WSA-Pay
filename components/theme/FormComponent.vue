@@ -6,6 +6,7 @@
     <input
       v-if="
         field.type === 'text' ||
+        field.type === 'number' ||
         field.type === 'email' ||
         field.type === 'password'
       "
@@ -65,6 +66,10 @@ const { $swal } = useNuxtApp();
 const emit = defineEmits(["close", "refresh"]);
 // Define props
 const props = defineProps({
+  apiName: {
+    type: String,
+    default: "",
+  },
   fields: {
     type: Array,
     required: true,
@@ -114,7 +119,7 @@ const handleSubmit = async () => {
 
     // Call the composable function to either store or update based on `apiTitle`
     const { data, error } = await useApiStoreOrEdit({
-      api: "admin", // Replace with appropriate API
+      api: props.apiName, // Replace with appropriate API
       id: props.apiTitle === "update" ? props.id : null, // Use ID for updating
       method: props.apiTitle === "update" ? "PATCH" : "POST", // Use PUT for updating, POST for creating
       params: () => formData,

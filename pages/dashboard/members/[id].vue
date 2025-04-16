@@ -2,6 +2,14 @@
   <div v-if="pending">Loading...</div>
   <div v-else-if="error">Error: {{ error.message }}</div>
   <div v-else>
+    <Modal
+      :showModal="showModal"
+      @update:showModal="showModal = $event"
+      :formFields="formFields"
+      :title="modalTitle"
+      :apiTitle="apiTitle"
+      :apiName="apINewOrOldBalance"
+    />
     <section class="user-details">
       <div class="row">
         <!-- Account Info -->
@@ -40,13 +48,16 @@
                       width="20"
                       class="align-middle"
                     />
-                    {{ member.data?.country?.name }}
+                    {{ member.data?.country?.name ?? "no data" }}
                   </label>
                   <label
                     class="table-text ml-50 text-bold-600 cursor-pointer email"
                     @click="copyToClipboard(member.data?.email)"
                   >
-                    <small>{{ member.data?.email }}</small>
+                    <small>
+                      <i class="feather icon-mail"></i>
+                      {{ member.data?.email }}</small
+                    >
                   </label>
                 </div>
               </div>
@@ -55,27 +66,35 @@
                 <tbody>
                   <tr>
                     <th class="text-muted">Display Name</th>
-                    <td class="table-text">{{ member.data?.displayName ?? '--' }}</td>
+                    <td class="table-text">
+                      {{ member.data?.displayName ?? "--" }}
+                    </td>
                   </tr>
                   <tr>
                     <th class="text-muted">Phone</th>
-                    <td class="table-text">{{ member.data?.phone ?? '--' }}</td>
+                    <td class="table-text">{{ member.data?.phone ?? "--" }}</td>
                   </tr>
                   <tr>
                     <th class="text-muted">Address</th>
-                    <td class="table-text">{{ member.data?.address ?? '--' }}</td>
+                    <td class="table-text">
+                      {{ member.data?.address ?? "--" }}
+                    </td>
                   </tr>
                   <tr>
                     <th class="text-muted">State</th>
-                    <td class="table-text">{{ member.data?.state ?? '--' }}</td>
+                    <td class="table-text">{{ member.data?.state ?? "--" }}</td>
                   </tr>
                   <tr>
                     <th class="text-muted">Postal Code</th>
-                    <td class="table-text">{{ member.data?.postalCode ?? '--' }}</td>
+                    <td class="table-text">
+                      {{ member.data?.postalCode ?? "--" }}
+                    </td>
                   </tr>
                   <tr>
                     <th class="text-muted">Created At</th>
-                    <td class="table-text">{{ member.data?.createdAt ?? '--' }}</td>
+                    <td class="table-text">
+                      {{ member.data?.createdAt ?? "--" }}
+                    </td>
                   </tr>
                   <tr>
                     <th class="text-muted">Status</th>
@@ -108,10 +127,26 @@
 
         <!-- Balances -->
         <div class="col-md-6 col-12">
-          <h5 class="card-title">
-            <i class="feather icon-save mr-50"></i>
-            Balances
+          <h5
+            class="card-title d-flex align-items-center justify-content-between"
+          >
+            <div>
+              <i class="feather icon-save mr-50"></i>
+              Balances
+            </div>
+            <div class="bg-primary avatar m-0" @click="openAddModal">
+              <div class="avatar-content">
+                <i
+                  class="feather icon-plus font-medium-3"
+                  v-if="
+                    !member.data?.balances || member.data?.balances.length === 0
+                  "
+                ></i>
+                <i class="feather icon-repeat font-medium-3" v-else></i>
+              </div>
+            </div>
           </h5>
+
           <div v-if="member.data?.balances && member.data?.balances.length">
             <div class="card mb-0">
               <div
@@ -120,30 +155,34 @@
                 :key="item.currency"
               >
                 <h4>{{ item.balance }} {{ item.currency }}</h4>
-                <div class="bg-primary avatar m-0">
-                  <div class="avatar-content">
-                    <i class="feather icon-repeat font-medium-3"></i>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
           <div v-else>
             <div class="card mb-0">
-              <div class="card-header balance-header" v-for="item in currencies" :key="item.currency">
-                <h4>{{item.balance}} {{item.currency}}</h4>
-                <div class="bg-primary avatar m-0">
-                  <div class="avatar-content">
-                    <i class="feather icon-plus font-medium-3"></i>
-                  </div>
-                </div>
+              <div
+                class="card-header balance-header"
+                v-for="item in currencies"
+                :key="item.value"
+              >
+                <h4>0 {{ item.label }}</h4>
               </div>
             </div>
           </div>
           <div class="">
-            <h5 class="card-title">
-              <i class="feather icon-lock mr-50"></i>
+            <h5 class="card-title d-flex justify-content-between align-items-center">
+              <div>
+                <i class="feather icon-lock mr-50"></i>
               Latest Transactions
+              </div>
+              <div class="chip bg-chip cursor-pointer">
+                <div class="chip-body">
+                  <span class="chip-text">
+                    <i class="feather icon-eye"></i>
+                    view details</span
+                  >
+                </div>
+              </div>
             </h5>
             <div
               v-if="
@@ -188,9 +227,9 @@
                   <div
                     class="d-flex justify-content-center p-2 align-items-center"
                   >
-                    <strong class="text-capitalize text-dark"
-                      >No Transactions</strong
-                    >
+                    <strong class="text-capitalize text-muted text-center">
+                      There are no transactions to display at the moment.
+                    </strong>
                   </div>
                 </div>
               </div>
@@ -219,11 +258,11 @@
                 </thead>
                 <tbody>
                   <tr v-for="sub in member.data?.subAccounts" :key="sub.id">
-                    <td>{{ sub.name  }}</td>
-                    <td>{{ sub.displayName  }}</td>
-                    <td>{{ sub.email  }}</td>
-                    <td>{{ sub.phone  }}</td>
-                    <td>{{ sub.createdAt  }}</td>
+                    <td>{{ sub.name }}</td>
+                    <td>{{ sub.displayName }}</td>
+                    <td>{{ sub.email }}</td>
+                    <td>{{ sub.phone }}</td>
+                    <td>{{ sub.createdAt }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -239,13 +278,8 @@
 const route = useRoute();
 const memberId = route.params.id;
 import { useNotify } from "~/composables/useNotify";
+import Modal from "@/components/theme/Modal.vue";
 
-
-const currencies = [
-  { currency: "USD", balance: 0 },
-  { currency: "EUR", balance: 0 },
-  { currency: "AUD", balance: 0 },
-];
 const notify = useNotify();
 const {
   data: member,
@@ -255,6 +289,88 @@ const {
   api: "members",
   id: memberId,
 });
+// Refs & Reactive States
+const showModal = ref(false);
+
+const modalTitle = ref("");
+const apiTitle = ref("add");
+const formFields = ref([]);
+const apINewOrOldBalance = ref("");
+const currencies = [
+  { label: "USD", value: "USD", name: "USD" },
+  { label: "EUR", value: "EUR", name: "EUR" },
+  { label: "AUD", value: "AUD", name: "AUD" },
+];
+
+const transactionTypes = [
+  { label: "Withdraw", value: "withdraw" },
+  { label: "Deposit", value: "add" },
+];
+
+// Modal Form Fields Config
+const baseFormFields = [
+  {
+    name: "currency",
+    label: "Currency",
+    type: "select",
+    placeholder: "Choose Currency",
+    required: true,
+    class: "form-control",
+    options: currencies,
+  },
+  {
+    name: "balance",
+    label: "Balance",
+    type: "number",
+    placeholder: "Enter Balance",
+    required: true,
+    class: "form-control",
+  },
+];
+
+const extendedFormFields = [
+  {
+    name: "type",
+    label: "Transaction Type",
+    type: "select",
+    placeholder: "Choose Type",
+    required: true,
+    class: "form-control",
+    options: transactionTypes,
+  },
+  {
+    name: "description",
+    label: "Description",
+    type: "textarea",
+    placeholder: "Enter Description",
+    required: false,
+    class: "form-control",
+  },
+];
+
+// ========== Modal Functions ==========
+const openAddModal = () => {
+  modalTitle.value = "Manage Balance";
+  apiTitle.value = "add";
+
+  const hasBalances = member?.value?.data?.balances?.length > 0;
+
+  // Set the appropriate API endpoint
+  apINewOrOldBalance.value = hasBalances
+    ? `members/${memberId}/wallet/transaction`
+    : `members/${memberId}/wallet`;
+
+  // Prepare form fields
+  formFields.value = [
+    ...baseFormFields,
+    ...(hasBalances ? extendedFormFields : []),
+  ].map((f) => ({ ...f, value: "" }));
+
+  showModal.value = true;
+};
+
+// ===================================
+
 const copyToClipboard = (email) => {
   navigator.clipboard
     .writeText(email)
