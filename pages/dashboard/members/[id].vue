@@ -46,7 +46,7 @@
                     <img
                       :src="member.data?.country?.flag ?? ''"
                       width="20"
-                      class="align-middle"
+                      class="align-middle radius-2"
                     />
                     {{ member.data?.country?.name ?? "no data" }}
                   </label>
@@ -134,7 +134,7 @@
               <i class="feather icon-save mr-50"></i>
               Balances
             </div>
-            <div class="bg-primary avatar m-0" @click="openAddModal">
+            <div class="btn btn-primary avatar m-0 btn-icon p-0" @click="openAddModal">
               <div class="avatar-content">
                 <i
                   class="feather icon-plus font-medium-3"
@@ -175,7 +175,7 @@
                 <i class="feather icon-lock mr-50"></i>
               Latest Transactions
               </div>
-              <div class="chip bg-chip cursor-pointer">
+              <div class="chip bg-chip cursor-pointer" @click="allTransactions">
                 <div class="chip-body">
                   <span class="chip-text">
                     <i class="feather icon-eye"></i>
@@ -246,7 +246,8 @@
 
           <div class="card">
             <div class="card-body card-padding">
-              <table class="table">
+              <div class="table-responsive">
+                <table class="table">
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -266,6 +267,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </div>
@@ -277,6 +279,11 @@
 <script setup >
 const route = useRoute();
 const memberId = route.params.id;
+
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
 import { useNotify } from "~/composables/useNotify";
 import Modal from "@/components/theme/Modal.vue";
 
@@ -381,4 +388,8 @@ const copyToClipboard = (email) => {
       notify.error("Failed to copy");
     });
 };
+
+const allTransactions = () => {
+  router.push(`transactions/${memberId}`)
+}
 </script>

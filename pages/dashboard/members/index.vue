@@ -81,6 +81,7 @@
     @deleted-items="showDeletedItems"
     @get-items="showAllItems"
     @sort-data="handleSortData"
+    :deleteBtns="true"
   />
 </template>
 
@@ -153,6 +154,8 @@ const filterItems = [
 const columns = [
   { label: "Name", key: "name" },
   { label: "Status", key: "status" },
+  { label: "Actions", key: "actions" },
+
 ];
 
 // Modal Form Fields Config

@@ -23,7 +23,8 @@
             </label>
 
             <button
-              class="btn btn-danger btnOut ml-1 "
+            v-if="deleteBtns"
+              class="btn btn-danger btnOut ml-1"
               :readonly="selectedIds.length === 0"
               @click="deleteSelected"
             >
@@ -31,16 +32,16 @@
               multiple
             </button>
             <button
-              v-if="!showDeletedItems"
-              class="btn btn-outline-danger btnOut ml-1 "
+              v-if="!showDeletedItems && deleteBtns"
+              class="btn btn-outline-danger btnOut ml-1"
               @click="deletedItems"
             >
               <i class="feather icon-delete"></i>
               deleted items
             </button>
             <button
-              v-if="showDeletedItems"
-              class="btn btn-outline-success btnOut ml-1 "
+              v-if="showDeletedItems && deleteBtns"
+              class="btn btn-outline-success btnOut ml-1"
               @click="getItems"
             >
               <i class="feather icon-check"></i>
@@ -101,7 +102,6 @@
                     </a>
                   </span>
                 </th>
-                <th v-if="!showDeletedItems">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -137,12 +137,9 @@
                     :name="item.name"
                     :countryName="item.country?.name || 'N/A'"
                     :city="item.city || 'N/A'"
-                    :countryFlag="item.country?.flag "
+                    :countryFlag="item.country?.flag"
                     :email="item.email"
-                    v-if="
-                      colIndex === 0 &&
-                      route.path.startsWith('/dashboard/members')
-                    "
+                    v-if="colIndex === 0 && route.path == '/dashboard/members'"
                   />
 
                   <!-- Status column chip -->
@@ -167,31 +164,48 @@
                     </div>
                   </div>
 
+                  <span v-else-if="col.key === 'type'">
+                    <div v-if="item[col.key] == 'add'">
+                      <i
+                        class="feather icon-corner-right-down text-success"
+                      ></i>
+                      deposit
+                    </div>
+                    <div v-if="item[col.key] == 'withdraw'">
+                      <i class="feather icon-corner-right-up text-danger"></i>
+                      withdraw
+                    </div>
+                  </span>
                   <!-- Default display -->
+               
+                  <span v-else-if="col.key === 'actions'">
+                    <button
+                      class="btn btn-primary btn-icon rounded-circle"
+                      @click="editItem(item)"
+                    >
+                      <i class="feather icon-edit"></i>
+                    </button>
+                    <button
+                      class="btn btn-danger btn-icon rounded-circle"
+                      @click="confirmDelete(item.id)"
+                    >
+                      <i class="feather icon-trash"></i>
+                    </button>
+                    <button
+                      class="btn btn-light btn-icon rounded-circle"
+                      @click="viewItem(item.id)"
+                    >
+                      <i class="feather icon-eye"></i>
+                    </button>
+                  </span>
+
+                  <span v-else-if="col.key === 'created_at'">
+                    {{ formatDate(item[col.key]) }}
+                  </span>
+
                   <span v-else>
                     {{ item[col.key] }}
                   </span>
-                </td>
-
-                <td v-if="!showDeletedItems">
-                  <button
-                    class="btn btn-primary btn-icon rounded-circle"
-                    @click="editItem(item)"
-                  >
-                    <i class="feather icon-edit"></i>
-                  </button>
-                  <button
-                    class="btn btn-danger btn-icon rounded-circle"
-                    @click="confirmDelete(item.id)"
-                  >
-                    <i class="feather icon-trash"></i>
-                  </button>
-                  <button
-                    class="btn btn-light btn-icon rounded-circle"
-                    @click="viewItem(item.id)"
-                  >
-                    <i class="feather icon-eye"></i>
-                  </button>
                 </td>
               </tr>
               <tr v-if="filteredData.length === 0">
@@ -239,6 +253,7 @@
 import { ref, watch, computed } from "vue";
 import UserInfo from "@/components/theme/UserInfo.vue";
 import { useRoute } from "vue-router";
+import { form } from "#build/ui";
 const route = useRoute();
 const props = defineProps({
   data: {
@@ -248,6 +263,10 @@ const props = defineProps({
   meta: {
     type: Object,
     required: true,
+  },
+  deleteBtns:{
+    type: Boolean,
+
   },
   columns: {
     type: Array as () => { label: string; key: string }[],
@@ -262,7 +281,7 @@ const emit = defineEmits([
   "update-selected",
   "sort-data",
   "view-item",
-  "edit-item"
+  "edit-item",
 ]);
 
 const localPerPage = ref(10);
@@ -346,9 +365,7 @@ const confirmDelete = (id) => {
 // Confirm Delete for selected Item
 const viewItem = (id) => {
   emit("view-item", id); // Emit the ID for deletion
-
 };
-
 
 // Handle Deleting Selected Items
 const deleteSelected = () => {
@@ -367,6 +384,16 @@ const getItems = () => {
   showDeletedItems.value = false; // Toggle deleted items view
   emit("get-items"); // Emit to show deleted items
 };
+
+const formatDate = (date: any) => {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(date))
+}
 
 // Handle Sorting
 </script>

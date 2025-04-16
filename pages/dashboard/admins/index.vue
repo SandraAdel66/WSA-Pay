@@ -33,6 +33,7 @@
     @deleted-items="showDeletedItems"
     @get-items="showAllItems"
     @sort-data="handleSortData"
+    :deleteBtns="true"
   />
 </template>
 
@@ -65,6 +66,8 @@ const admins = ref(null)
 const columns = [
   { label: "Name", key: "name" },
   { label: "Email", key: "email" },
+  { label: "Actions", key: "actions" },
+
 
 ]
 

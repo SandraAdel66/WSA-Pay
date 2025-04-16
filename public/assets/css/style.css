@@ -211,6 +211,8 @@ table.data-thumb-view.dataTable tbody td {
 .bg-chip {
   background-color: #e6e6e6; 
   transition: 0.3s ease-in-out;
+  font-weight: 600;
+  box-shadow: 1px 1px 2px 1px #cacaca;
 
   }
 
@@ -218,3 +220,10 @@ table.data-thumb-view.dataTable tbody td {
     background-color: #c4c4c4; 
 
   }
+
+
+  table.data-list-view.dataTable thead th, table.data-thumb-view.dataTable thead th {
+
+    text-align: left;
+    padding-left: 0;
+}
