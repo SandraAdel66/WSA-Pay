@@ -16,7 +16,7 @@
       
       <p
         class="text-bold-500 cursor-pointer email"
-        @click="copyToClipboard(email || 'kennet.sjostrand@bertling.com')"
+        @click="copyToClipboard(email)"
       >
         {{ email }}
       </p>
@@ -56,8 +56,8 @@ const props = defineProps({
     
 });
 
-const copyToClipboard = () => {
-  navigator.clipboard.writeText('kennet.sjostrand@bertling.com').then(() => {
+const copyToClipboard = (email) => {
+  navigator.clipboard.writeText(email).then(() => {
     notify.success('Copied to clipboard!')
   }).catch(() => {
     notify.error('Failed to copy')
@@ -79,8 +79,8 @@ const copyToClipboard = () => {
   justify-content: left;
 }
 .parent-image {
-  width: 100px;
-  height: 100px;
+  width: 70px;
+  height: 70px;
   display: flex;
   align-items: center;
 }
@@ -97,16 +97,14 @@ const copyToClipboard = () => {
   height: 3.5rem;
 }
 .table-report h4 {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 0.5;
-  color: #212529;
   margin-top: 5px;
 }
 
 .table-report p {
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1;
-  color: #212529;
   margin-bottom: 5px;
 }
 .table-report b {
@@ -114,8 +112,8 @@ const copyToClipboard = () => {
 }
 .table-report p.font-bold {
   font-size: 13px;
-  color: #212529;
 }
+
 .email:hover {
   color: #8a7ff2;
   text-decoration: underline;

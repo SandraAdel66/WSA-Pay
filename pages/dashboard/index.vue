@@ -1,27 +1,42 @@
 <template>
-  <section>
+  <section class="dashboard">
     <div class="row">
-      <Card count="1.2M" label="Pending" 
-        iconClass="feather icon-clock"
-        colorMain="text-primary"
-        bgClss="bg-rgba-primary"
-      />
-      <Card count="1.2M" label="Approved" 
-        iconClass="feather icon-users"
-        colorMain="text-success"
-        bgClss="bg-rgba-success"
-      />
-      <Card count="1.2M" label="Suspended" 
-        iconClass="feather icon-circle"
-        colorMain="text-primary"
-        bgClss="bg-rgba-primary"
-      />
-      <Card count="1.2M" label="Deactivate" 
-        iconClass="feather icon-lock"
-        colorMain="text-danger"
-        bgClss="bg-rgba-danger"
-      />
-      
+      <div class="col-lg-3 col-md-6 col-12">
+        <Card
+          count="1.2M"
+          label="Pending"
+          iconClass="feather icon-clock"
+          colorMain="text-primary"
+          bgClss="bg-rgba-primary"
+        />
+      </div>
+      <div class="col-lg-3 col-md-6 col-12">
+        <Card
+          count="1.2M"
+          label="Approved"
+          iconClass="feather icon-users"
+          colorMain="text-success"
+          bgClss="bg-rgba-success"
+        />
+      </div>
+      <div class="col-lg-3 col-md-6 col-12">
+        <Card
+          count="1.2M"
+          label="Suspended"
+          iconClass="feather icon-circle"
+          colorMain="text-primary"
+          bgClss="bg-rgba-primary"
+        />
+      </div>
+      <div class="col-lg-3 col-md-6 col-12">
+        <Card
+          count="1.2M"
+          label="Deactivate"
+          iconClass="feather icon-lock"
+          colorMain="text-danger"
+          bgClss="bg-rgba-danger"
+        />
+      </div>
     </div>
 
     <div class="row match-height">

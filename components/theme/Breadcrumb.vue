@@ -27,10 +27,10 @@
     </div>
     <div class="content-header-right text-md-right col-md-3 col-12">
       <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-primary mar" v-if="add" @click="openModal">
+        <button type="button" class="btn btn-primary btn-icon mar" v-if="add" @click="openModal">
           <i class="feather icon-plus"></i>
         </button>
-        <button type="button" class="btn btn-primary mar" v-if="filter" @click="openModalFilter">
+        <button type="button" class="btn btn-primary btn-icon mar" v-if="filter" @click="openModalFilter">
           <i class="feather icon-filter"></i>
         </button>
       </div>
@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-const emit = defineEmits(['openModal']);  // Emitting openModal to notify parent
+const emit = defineEmits(['openModal', 'open-filter']);  // Emitting openModal to notify parent
 
 defineProps({
   title: {
@@ -65,6 +65,8 @@ const openModal = () => {
   emit('openModal', true);
 };
 const openModalFilter = () => {
+  console.log('openModalFilter');
+  
   emit('open-filter', true);
 };
 </script>

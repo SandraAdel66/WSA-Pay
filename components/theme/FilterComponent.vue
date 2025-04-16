@@ -1,45 +1,52 @@
 <template>
- 
- <div v-for="(field, index) in processedFields" :key="index" class="mb-1">
-  <label :for="field.name" class="form-label">{{ field.label }}</label>
+  <div v-for="(field, index) in processedFields" :key="index" class="mb-1">
+    <label :for="field.name" class="form-label">{{ field.label }}</label>
 
-  <input
-    v-if="['text', 'email', 'password'].includes(field.type)"
-    v-model="field.value"
-    :type="field.type"
-    :name="field.name"
-    :placeholder="field.placeholder"
-    class="form-control"
-  />
-  <textarea
-    v-if="field.type === 'textarea'"
-    v-model="field.value"
-    :name="field.name"
-    :placeholder="field.placeholder"
-    class="form-control"
-  ></textarea>
+    <!-- Text, Email, Password -->
+    <input
+      v-if="['text', 'email', 'password'].includes(field.type)"
+      v-model="field.value"
+      :type="field.type"
+      :name="field.name"
+      :placeholder="field.placeholder"
+      class="form-control"
+    />
 
-  <VSelect
-    v-if="field.type === 'select'"
-    v-model="field.value"
-    :options="field.data || []"
-    :reduce="option => option.code"
-    :get-option-label="option => `${option.name}`"
-  >
-    <template #option="{ name, flag }" v-if="field.name === 'country'">
-      <img :src="flag" width="20" class="w-5 h-5 inline-block mr-1" />
-      {{ name }}
-    </template>
-  </VSelect>
+    <!-- Textarea -->
+    <textarea
+      v-if="field.type === 'textarea'"
+      v-model="field.value"
+      :name="field.name"
+      :placeholder="field.placeholder"
+      class="form-control"
+    ></textarea>
 
-  <div v-if="field.error" class="invalid-feedback">{{ field.error }}</div>
-</div>
+    <!-- Select -->
+    <VSelect
+      v-if="field.type === 'select'"
+      v-model="field.value"
+      :options="field.data || []"
+      :reduce="(option) => option.id"
+      :get-option-label="(option) => `${option.name}`"
+    >
+      <!-- Custom country display -->
+      <template #option="{ name, flag }" v-if="field.name === 'country_id'">
+        <img :src="flag" width="20" class="w-5 h-5 inline-block mr-1" />
+        {{ name }}
+      </template>
+    </VSelect>
 
+    <!-- Error message -->
+    <div v-if="field.error" class="invalid-feedback">{{ field.error }}</div>
+  </div>
 
+  <!-- Modal Footer Buttons -->
   <div class="modal-footer">
-    <!-- Change the button text based on apiTitle -->
     <button type="button" @click="handleSubmit" class="btn btn-primary">
-      {{ apiTitle === "update" ? "Update" : "Submit" }}
+      Search
+    </button>
+    <button type="button" @click="resetFilters" class="btn btn-primary">
+      Reset
     </button>
     <button type="button" class="btn btn-danger" @click="$emit('close')">
       Close
@@ -48,11 +55,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-const { $swal } = useNuxtApp()
+import { ref, computed } from "vue";
+const { $swal } = useNuxtApp();
 
 // Emits
-const emit = defineEmits(['close', 'refresh'])
+const emit = defineEmits(["close", "filter-filters", "reset-filters"]);
 
 // Props
 const props = defineProps({
@@ -60,54 +67,70 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  apiTitle: {
+  title: {
     type: String,
-    default: '',
+    default: "",
   },
   id: {
     type: [String, Number],
     default: null,
   },
-})
+});
 
-// ✅ Status list
+// Status list
 const statuses = [
-  { name: 'Pending', code: 'pending' },
-  { name: 'Approved', code: 'approved' },
-  { name: 'Suspended', code: 'suspended' },
-  { name: 'Blacklisted', code: 'blacklisted' },
-]
+  { id: "pending", name: "Pending", code: "pending" },
+  { id: "approved", name: "Approved", code: "approved" },
+  { id: "suspended", name: "Suspended", code: "suspended" },
+  { id: "blacklisted", name: "Blacklisted", code: "blacklisted" },
+];
 
-// ✅ Call unconditionally, but use only if needed
-const { data: countries } = useCountries()
+// Use countries composable
+const { data: countries } = useCountries();
 
-// ✅ Determine if countries should be injected
+// Determine if countries should be injected
 const needsCountries = computed(() =>
-  props.fields.some(field => field.type === 'select' && field.name === 'country')
-)
+  props.fields.some(
+    (field) => field.type === "select" && field.name === "country_id"
+  )
+);
 
-// ✅ Process fields
+// Process and enrich fields
 const processedFields = computed(() => {
-  return props.fields.map(field => {
-    if (field.type === 'select' && field.name === 'country') {
-      return { ...field, data: needsCountries.value ? countries.value?.data || [] : [] }
+  return props.fields.map((field) => {
+    if (field.type === "select" && field.name === "country_id") {
+      return {
+        ...field,
+        data: needsCountries.value ? countries.value?.data || [] : [],
+      };
     }
-    if (field.type === 'select' && field.name === 'status') {
-      return { ...field, data: statuses }
+    if (field.type === "select" && field.name === "status") {
+      return { ...field, data: statuses };
     }
-    return field
-  })
-})
+    return field;
+  });
+});
 
+// Handle Search
 const handleSubmit = async () => {
-  // your submit logic
-}
+  const formValues = {};
+  processedFields.value.forEach((field) => {
+    formValues[field.name] = field.value;
+  });
+  emit("filter-filters", formValues);
+};
+
+// Handle Reset
+const resetFilters = () => {
+  props.fields.forEach((field) => {
+    field.value = null; // or use field.default ?? null
+  });
+  emit("reset-filters");
+};
 </script>
 
-
-
 <style>
-.vs__search, 
+.vs__search,
 .vs__selected-options {
   font-size: 12px !important;
 }

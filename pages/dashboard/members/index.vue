@@ -1,41 +1,51 @@
 <template>
-  <Breadcrumb
-    title="Memebers"
-    :items="[{ label: 'List of members', to: '/members' }]"
-    :add="true"
-    :filter="(filter = true)"
-    @open-filter="openModalFilter"
-    @openModal="openAddModal"
-  />
-  <div class="row">
-    <Card
-      count="1.2M"
-      label="Pending"
-      iconClass="feather icon-clock"
-      colorMain="text-primary"
-      bgClss="bg-rgba-primary"
+  <ClientOnly>
+    <Breadcrumb
+      title="Memebers"
+      :items="[{ label: 'List of members', to: '/members' }]"
+      :add="false"
+      :filter="(filter = true)"
+      @open-filter="openModalFilter"
+      @openModal="openAddModal"
     />
-    <Card
-      count="1.2M"
-      label="Approved"
-      iconClass="feather icon-users"
-      colorMain="text-success"
-      bgClss="bg-rgba-success"
-    />
-    <Card
-      count="1.2M"
-      label="Suspended"
-      iconClass="feather icon-circle"
-      colorMain="text-primary"
-      bgClss="bg-rgba-primary"
-    />
-    <Card
-      count="1.2M"
-      label="Deactivate"
-      iconClass="feather icon-lock"
-      colorMain="text-danger"
-      bgClss="bg-rgba-danger"
-    />
+  </ClientOnly>
+  <div class="row dashboard">
+    <div class="col-lg-3 col-md-6 col-12">
+      <Card
+        count="1.2M"
+        label="Pending"
+        iconClass="feather icon-clock"
+        colorMain="text-primary"
+        bgClss="bg-rgba-primary"
+      />
+    </div>
+    <div class="col-lg-3 col-md-6 col-12">
+      <Card
+        count="1.2M"
+        label="Approved"
+        iconClass="feather icon-users"
+        colorMain="text-success"
+        bgClss="bg-rgba-success"
+      />
+    </div>
+    <div class="col-lg-3 col-md-6 col-12">
+      <Card
+        count="1.2M"
+        label="Suspended"
+        iconClass="feather icon-circle"
+        colorMain="text-primary"
+        bgClss="bg-rgba-primary"
+      />
+    </div>
+    <div class="col-lg-3 col-md-6 col-12">
+      <Card
+        count="1.2M"
+        label="Deactivate"
+        iconClass="feather icon-lock"
+        colorMain="text-danger"
+        bgClss="bg-rgba-danger"
+      />
+    </div>
   </div>
 
   <Modal
@@ -53,6 +63,8 @@
     :items="filterItems"
     :modalFilter="modalFilter"
     @close="modalFilter = false"
+    @filter-filters="submitFilters"
+    @reset-filters="resetFilters"
   />
   <Table
     v-if="members && members.data"
@@ -62,6 +74,7 @@
     @change-page="handlePageChange"
     @change-per-page="handlePerPageChange"
     @change-search="handleSearchChange"
+    @view-item="viewItem"
     @edit-item="openEditModal"
     @delete-item="handleDeleteItem"
     @delete-selected="handleDeleteSelected"
@@ -80,7 +93,10 @@ import ModalFilter from "@/components/theme/ModalFilter.vue";
 import Card from "@/components/theme/Card.vue";
 
 import Table from "@/components/theme/Table.vue";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
+const memberStore = useMemberStore();
 const { $swal } = useNuxtApp();
 
 // Refs & Reactive States
@@ -99,6 +115,7 @@ const sortColumn = ref(null);
 const sortDirection = ref(null);
 const showDeleted = ref(false);
 const modalFilter = ref(false);
+const appliedFilters = ref({});
 
 console.log(modalFilter.value);
 
@@ -120,7 +137,7 @@ const filterItems = [
     class: "form-control",
   },
   {
-    name: "country",
+    name: "country_id",
     label: "Country",
     type: "select",
     class: "form-control",
@@ -137,7 +154,6 @@ const filterItems = [
 const columns = [
   { label: "Name", key: "name" },
   { label: "Status", key: "status" },
-
 ];
 
 // Modal Form Fields Config
@@ -171,7 +187,16 @@ const formFieldsConfig = [
 const { data, refresh } = useApiIndex({
   api: "members",
   key: "members-list",
-  watch: [currentPage, perPage, search, sortColumn, sortDirection, showDeleted],
+
+  watch: [
+    currentPage,
+    perPage,
+    search,
+    sortColumn,
+    sortDirection,
+    showDeleted,
+    appliedFilters,
+  ],
   params: () => ({
     page: currentPage.value,
     per_page: perPage.value,
@@ -179,6 +204,9 @@ const { data, refresh } = useApiIndex({
     order_by: sortColumn.value,
     sort: sortDirection.value,
     deleted: showDeleted.value,
+    filters: {
+      ...appliedFilters.value,
+    },
   }),
 });
 
@@ -305,6 +333,40 @@ const showDeleteSuccess = () => {
       if (popup) popup.style.gridRow = "1";
     },
   });
+};
+// ========== Filter Submission ==========
+const submitFilters = (filters) => {
+  if (filters && Object.keys(filters).length > 0) {
+    const cleanedFilters = Object.fromEntries(
+      Object.entries(filters).filter(
+        ([_, v]) => v !== null && v !== "" && v !== undefined
+      )
+    );
+
+    appliedFilters.value = cleanedFilters;
+    refresh(); // refresh the API call with updated filters
+  }
+};
+
+// ========== Cleanup ==========
+onBeforeUnmount(() => {
+  appliedFilters.value = {};
+});
+// Cleanup applied filters when modal is closed
+watch(showModal, (newValue) => {
+  if (!newValue) {
+    appliedFilters.value = {};
+  }
+});
+// Cleanup applied filters when modal is closed
+
+const resetFilters = () => {
+  appliedFilters.value = {};
+};
+
+const viewItem = (id) => {
+  memberStore.setMember(id);
+  router.push(`/dashboard/members/${id}`);
 };
 </script>
 

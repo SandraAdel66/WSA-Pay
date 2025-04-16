@@ -23,7 +23,7 @@
             </label>
 
             <button
-              class="btn btn-danger btnOut ml-1 btn-icon"
+              class="btn btn-danger btnOut ml-1 "
               :readonly="selectedIds.length === 0"
               @click="deleteSelected"
             >
@@ -32,7 +32,7 @@
             </button>
             <button
               v-if="!showDeletedItems"
-              class="btn btn-outline-danger btnOut ml-1 btn-icon"
+              class="btn btn-outline-danger btnOut ml-1 "
               @click="deletedItems"
             >
               <i class="feather icon-delete"></i>
@@ -40,7 +40,7 @@
             </button>
             <button
               v-if="showDeletedItems"
-              class="btn btn-outline-success btnOut ml-1 btn-icon"
+              class="btn btn-outline-success btnOut ml-1 "
               @click="getItems"
             >
               <i class="feather icon-check"></i>
@@ -175,16 +175,22 @@
 
                 <td v-if="!showDeletedItems">
                   <button
-                    class="btn btn-primary btn-icon"
+                    class="btn btn-primary btn-icon rounded-circle"
                     @click="editItem(item)"
                   >
                     <i class="feather icon-edit"></i>
                   </button>
                   <button
-                    class="btn btn-danger ml-1 btn-icon"
+                    class="btn btn-danger btn-icon rounded-circle"
                     @click="confirmDelete(item.id)"
                   >
                     <i class="feather icon-trash"></i>
+                  </button>
+                  <button
+                    class="btn btn-light btn-icon rounded-circle"
+                    @click="viewItem(item.id)"
+                  >
+                    <i class="feather icon-eye"></i>
                   </button>
                 </td>
               </tr>
@@ -255,6 +261,8 @@ const emit = defineEmits([
   "change-page",
   "update-selected",
   "sort-data",
+  "view-item",
+  "edit-item"
 ]);
 
 const localPerPage = ref(10);
@@ -335,6 +343,13 @@ const confirmDelete = (id) => {
   emit("delete-item", id); // Emit the ID for deletion
 };
 
+// Confirm Delete for selected Item
+const viewItem = (id) => {
+  emit("view-item", id); // Emit the ID for deletion
+
+};
+
+
 // Handle Deleting Selected Items
 const deleteSelected = () => {
   if (selectedIds.value.length === 0) return;
@@ -357,7 +372,7 @@ const getItems = () => {
 </script>
 
 
-<style>
+<style scoped>
 .btnOut {
   padding: 10px 6px !important;
   font-weight: 600;
@@ -381,5 +396,19 @@ table.data-thumb-view.dataTable tbody td {
   transform: translate(0);
   line-height: 1;
   opacity: 1;
+}
+.btn-icon {
+  margin: 2px;
+}
+
+.btn-light{
+  background-color: #e2e8f0 !important;
+  border-color: #e2e8f0 !important;
+  color: #4a5568 !important;
+}
+.btn-light:hover{
+  background-color: #cbd5e1 !important;
+  border-color: #cbd5e1 !important;
+  color: #2d3748 !important;
 }
 </style>

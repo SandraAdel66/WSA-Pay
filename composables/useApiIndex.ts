@@ -1,6 +1,7 @@
 export const useApiIndex = ({
   api,
   order_by,
+  filters,
   sort,
   key = '',
   lazy = false,
@@ -9,6 +10,7 @@ export const useApiIndex = ({
   params = () => ({}),
 }: {
   api: string;
+  filters?: Record<string, any>;
   key?: string;
   sort?: string;
   order_by?: string;
@@ -23,7 +25,7 @@ export const useApiIndex = ({
       useApiFetch(`/api/${api}/index`, {
         method: 'POST',
         body: {
-          filters: {},
+          filters: filters,
           orderBy: order_by,
           orderByDirection: sort,
           paginate: true,

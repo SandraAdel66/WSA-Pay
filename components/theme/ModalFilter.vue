@@ -49,9 +49,10 @@
             <FilterComponent
               :fields="items"
               @close="closeModal"
-              @refresh="refresh"
               :id="id"
-              :apiTitle="apiTitle"
+              :title="title"
+              @filter-filters="submitFilters"
+              @reset-filters="resetFilters"
             />
           </div>
         </div>
@@ -77,10 +78,20 @@ const props = defineProps({
 });
 
 // Emits
-const emit = defineEmits(["close", "submit"]);
+const emit = defineEmits(["close", "submit", "filter-filters", "reset-filters"]);
 
 // Close the modal
 const closeModal = () => {
   emit("close", false);
+};
+// Submit the filters
+const submitFilters = (filters) => {
+  emit("filter-filters", filters);
+  
+};
+// Reset the filters
+const resetFilters = () => {
+  // Emit the reset-filters event to the parent component
+  emit("reset-filters");
 };
 </script>

@@ -355,8 +355,8 @@ table.data-thumb-view.dataTable thead .dt-checkboxes-select-all input:before {
 }
 table.data-list-view.dataTable thead .dt-checkboxes-select-all input:after,
 table.data-thumb-view.dataTable thead .dt-checkboxes-select-all input:after {
-  background-color: #7367f0;
-  border: 2px solid #7367f0;
+  background-color: #603881;
+  border: 2px solid #603881;
   font-family: feather;
   content: "\e83f";
   font-size: 0.75rem;
@@ -396,7 +396,7 @@ table.data-thumb-view.dataTable
   thead
   .dt-checkboxes-select-all
   input:checked:before {
-  border: 2px solid #7367f0;
+  border: 2px solid #603881;
   -webkit-transform: rotate(0);
   -ms-transform: rotate(0);
   transform: rotate(0);
@@ -482,7 +482,7 @@ table.data-thumb-view.dataTable tbody td.dt-checkboxes-cell input:before {
 }
 table.data-list-view.dataTable tbody td.dt-checkboxes-cell input:after,
 table.data-thumb-view.dataTable tbody td.dt-checkboxes-cell input:after {
-  background-color: #7367f0;
+  background-color: #603881;
   font-family: feather;
   content: "\e83f";
   font-size: 0.75rem;
@@ -522,7 +522,7 @@ table.data-thumb-view.dataTable
   -webkit-transform: rotate(0);
   -ms-transform: rotate(0);
   transform: rotate(0);
-  border: 2px solid #7367f0;
+  border: 2px solid #603881;
   -webkit-transition: all 0.2s ease;
   transition: all 0.2s ease;
 }
