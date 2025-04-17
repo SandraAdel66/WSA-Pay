@@ -1,6 +1,6 @@
 <template>
   <Breadcrumb
-    title="Transactions"
+    title="Member Transactions"
     :items="[{ label: 'List of transactions', to: '/transactions' }]"
     :add="false"
     :filters="false"
@@ -15,7 +15,6 @@
     @change-per-page="handlePerPageChange"
     @change-search="handleSearchChange"
     @sort-data="handleSortData"
-    @deleted-items="showDeletedItems"
     :deleteBtns="false"
 
   />
@@ -61,8 +60,6 @@ const { data, refresh } = useApiIndex({
     deleted: showDeleted.value,
   }),
 });
-console.log(data.value);
-
 // Sync data on change or page reload
 watch(
   data,

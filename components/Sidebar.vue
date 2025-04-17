@@ -9,17 +9,19 @@
         <li class="nav-item mr-auto">
           <a class="navbar-brand" href="#">
             <div class="brand-logo"></div>
-            <h2 class="brand-text mb-0">Vuexy</h2>
+            <h2 class="brand-text mb-0" >Vuexy</h2>
           </a>
         </li>
         <li class="nav-item nav-toggle">
-          <a class="nav-link modern-nav-toggle pr-0" data-toggle="collapse">
+          <a class="nav-link modern-nav-toggle pr-0" @click="toggleSidebar">
+            <!-- Mobile Toggle -->
             <i
               class="feather icon-x d-block d-xl-none font-medium-4 primary toggle-icon"
             ></i>
+            <!-- Desktop Toggle Icon -->
             <i
-              class="toggle-icon feather icon-disc font-medium-4 d-none d-xl-block collapse-toggle-icon primary"
-              data-ticon="icon-disc"
+              class="toggle-icon feather font-medium-4 d-none d-xl-block collapse-toggle-icon primary"
+              :class="menuCollapsed ? 'icon-circle' : 'icon-disc'"
             ></i>
           </a>
         </li>
@@ -47,7 +49,7 @@
         <!-- Members Dropdown -->
         <li
           class="nav-item"
-          :class="{ open: isMembersOpen }"
+          :class="{ open: isOpen }"
         >
           <a href="javascript:void(0)" @click="toggleMenu">
             <i class="feather icon-users"></i>
@@ -55,13 +57,16 @@
             <i
               class="feather float-right mr-0"
               :class="{
-                'icon-chevron-down': isMembersOpen,
-                'icon-chevron-right': !isMembersOpen
+                'icon-chevron-right': isOpen,
+                'icon-chevron-down': !isOpen
               }"
             ></i>
           </a>
           <ul class="menu-content">
-            <li :class="{ active: route.path === '/dashboard/members' }">
+            <li :class="{ active: route.path === '/dashboard/members' ||
+           route.path == `/dashboard/members/${route.params.id}` ||
+           route.path == `/dashboard/members/transactions/${route.params.id}`
+            }" >
               <NuxtLink to="/dashboard/members">
                 <i class="feather icon-circle"></i>
                 <span class="menu-item">List</span>
@@ -76,8 +81,15 @@
           </ul>
         </li>
 
-        <!-- Admins -->
-        <li class="nav-item" :class="{ active: route.path === '/dashboard/admins' }">
+        <!-- transactions -->
+        <li class="nav-item" :class="{ active: route.path === '/dashboard/transactions' }">
+          <NuxtLink to="/dashboard/transactions">
+            <i class="feather icon-server"></i>
+            <span class="menu-item">Transactions</span>
+          </NuxtLink>
+        </li>
+            <!-- Admins -->
+            <li class="nav-item" :class="{ active: route.path === '/dashboard/admins' }">
           <NuxtLink to="/dashboard/admins">
             <i class="feather icon-users"></i>
             <span class="menu-item">Admins</span>
@@ -90,19 +102,33 @@
 </template>
 
 <script setup>
-import { useRoute } from "vue-router";
-import { ref, computed } from "vue";
+import { useRoute } from 'vue-router';
+import { ref, onMounted } from 'vue';
 
 const route = useRoute();
+
+
 const isOpen = ref(false);
+const menuCollapsed = ref(false);
 
-// Determine if any members route is active
-const isMembersOpen = computed(() => {
-  return isOpen.value || route.path.startsWith("/dashboard/members");
-});
-
-// Optional toggle to manually open/close
+// Toggle Members dropdown
 function toggleMenu() {
   isOpen.value = !isOpen.value;
 }
+
+// Toggle Sidebar Collapse/Expand
+function toggleSidebar() {
+  menuCollapsed.value = !menuCollapsed.value;
+  document.body.classList.toggle('menu-collapsed', menuCollapsed.value);
+  document.body.classList.toggle('menu-expanded', !menuCollapsed.value);
+}
+
+// Optional: on load, ensure one class is set
+onMounted(() => {
+  document.body.classList.add('menu-expanded');
+});
 </script>
+
+<style scoped>
+/* Optional styling if needed */
+</style>
