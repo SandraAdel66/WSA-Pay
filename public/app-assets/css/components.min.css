@@ -166,10 +166,7 @@ html body.fixed-footer .content.app-content {
 html body p {
   line-height: 1.5rem;
 }
-html body.bg-full-screen-image {
-  background: url(../images/pages/vuexy-login-bg.jpg) center center no-repeat;
-  background-size: cover;
-}
+
 html body.blank-page .content {
   margin-left: 0;
 }
