@@ -82,6 +82,7 @@
     @get-items="showAllItems"
     @sort-data="handleSortData"
     :deleteBtns="true"
+    :tableTitle="'members'"
   />
 </template>
 

@@ -2,7 +2,7 @@
   <div class="table-report">
     <div class="parent-image">
       <img
-        src="https://api.wsa-network.com/storage/media/2023/10/11/746/PFS-100.jpg"
+        :src="logo ?? '/app-assets/images/logo/no-image-icon.png'"
         class="companYlogo"
         srcset=""
       />
@@ -32,7 +32,10 @@ const notify = useNotify()
 
 // Props
 const props = defineProps({
-
+  logo: {
+      type: String,
+      default: null,
+    },
     name: {
       type: String,
       default: null,

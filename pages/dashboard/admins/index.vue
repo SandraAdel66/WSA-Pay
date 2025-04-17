@@ -64,9 +64,9 @@ const admins = ref(null)
 
 // Table Columns
 const columns = [
-  { label: "Name", key: "name" },
-  { label: "Email", key: "email" },
-  { label: "Actions", key: "actions" },
+  { label: "Name", key: "name", tableTitle: "admins" },
+  { label: "Email", key: "email", tableTitle: "admins" },
+  { label: "Actions", key: "actions", tableTitle: "admins" },
 
 
 ]

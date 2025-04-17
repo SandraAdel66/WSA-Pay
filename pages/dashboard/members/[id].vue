@@ -25,7 +25,7 @@
                   <img
                     :src="
                       member.data?.logo ??
-                      '/app-assets/images/portrait/small/avatar-s-12.jpg'
+                      '/app-assets/images/logo/no-image-icon.png'
                     "
                     class="rounded mr-75"
                     alt="profile image"
@@ -284,7 +284,7 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-import { useNotify } from "~/composables/useNotify";
+
 import Modal from "@/components/theme/Modal.vue";
 
 const notify = useNotify();

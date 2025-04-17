@@ -23,7 +23,7 @@
             </label>
 
             <button
-            v-if="deleteBtns"
+              v-if="deleteBtns"
               class="btn btn-danger btnOut ml-1"
               :readonly="selectedIds.length === 0"
               @click="deleteSelected"
@@ -133,15 +133,24 @@
                   class="p-0"
                 >
                   <!-- Custom user info for first column on members page -->
-                  <UserInfo
+                  <ThemeUserInfo
                     :name="item.name"
+                    :logo="item.logo"
                     :countryName="item.country?.name || 'N/A'"
                     :city="item.city || 'N/A'"
                     :countryFlag="item.country?.flag"
                     :email="item.email"
                     v-if="colIndex === 0 && route.path == '/dashboard/members'"
                   />
-
+                  <div
+                    v-else-if="tableTitle == 'countries' && col.key === 'name'"
+                  >
+                    <ThemeCardImage
+                      :name="item.name"
+                      :code="item.code"
+                      :flag="item.flag"
+                    />
+                  </div>
                   <!-- Status column chip -->
                   <div v-else-if="col.key === 'status'">
                     <div
@@ -177,7 +186,7 @@
                     </div>
                   </span>
                   <!-- Default display -->
-               
+
                   <span v-else-if="col.key === 'actions'">
                     <button
                       class="btn btn-primary btn-icon rounded-circle"
@@ -199,8 +208,35 @@
                     </button>
                   </span>
 
-                  <span v-else-if="col.key === 'created_at'">
+                  <span
+                    v-else-if="
+                      tableTitle === 'transactions' && col.key === 'created_at'
+                    "
+                  >
                     {{ formatDate(item[col.key]) }}
+                  </span>
+
+                  <span v-else-if="col.key === 'active'">
+                    <div
+                      class="custom-control custom-switch custom-switch-dark"
+                    >
+                      <input
+                        :checked="item[col.key]"
+                        type="checkbox"
+                        class="custom-control-input"
+                        :id="`switch-${item.id}`"
+                        @change="
+                          $emit('change-status', {
+                            id: item.id,
+                            value: $event.target.checked,
+                          })
+                        "
+                      />
+                      <label
+                        class="custom-control-label"
+                        :for="`switch-${item.id}`"
+                      ></label>
+                    </div>
                   </span>
 
                   <span v-else>
@@ -249,30 +285,33 @@
   </section>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, watch, computed } from "vue";
-import UserInfo from "@/components/theme/UserInfo.vue";
 import { useRoute } from "vue-router";
-import { form } from "#build/ui";
+const { formatDate } = useFormatDate();
+
 const route = useRoute();
 const props = defineProps({
   data: {
-    type: Array as () => Array<Record<string, any>>, // Define the type of items in the data array
+    type: [], // Define the type of items in the data array
     required: true,
   },
   meta: {
     type: Object,
     required: true,
   },
-  deleteBtns:{
+  deleteBtns: {
     type: Boolean,
-
+  },
+  tableTitle: {
+    type: String,
   },
   columns: {
-    type: Array as () => { label: string; key: string }[],
+    type: [],
     required: true,
   },
 });
+console.log(props.tableTitle);
 
 const emit = defineEmits([
   "change-per-page",
@@ -309,7 +348,7 @@ const filteredData = computed(() => {
 });
 
 // Checkbox selection
-const selectedIds = ref<number[] | string[]>([]);
+const selectedIds = ref([]);
 
 // Emit selected IDs to parent
 watch(selectedIds, () => {
@@ -324,8 +363,8 @@ const isAllSelected = computed(() => {
   );
 });
 
-const toggleSelectAll = (event: Event) => {
-  const checked = (event.target as HTMLInputElement).checked;
+const toggleSelectAll = (event) => {
+  const checked = event.target.checked;
   const currentPageIds = filteredData.value.map((item) => item.id);
 
   if (checked) {
@@ -341,7 +380,7 @@ const toggleSelectAll = (event: Event) => {
   }
 };
 
-const toggleSingleSelect = (id: string | number) => {
+const toggleSingleSelect = (id) => {
   if (selectedIds.value.includes(id)) {
     selectedIds.value = selectedIds.value.filter((i) => i !== id);
   } else {
@@ -349,7 +388,7 @@ const toggleSingleSelect = (id: string | number) => {
   }
 };
 // Sort data based on column key
-const sortData = (key: string, sort: string) => {
+const sortData = (key, sort) => {
   emit("sort-data", { key, sort });
 };
 // Handle Edit Button Click
@@ -384,16 +423,6 @@ const getItems = () => {
   showDeletedItems.value = false; // Toggle deleted items view
   emit("get-items"); // Emit to show deleted items
 };
-
-const formatDate = (date: any) => {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(date))
-}
 
 // Handle Sorting
 </script>

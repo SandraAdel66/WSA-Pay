@@ -9,7 +9,7 @@
         <li class="nav-item mr-auto">
           <a class="navbar-brand" href="#">
             <div class="brand-logo"></div>
-            <h2 class="brand-text mb-0" >Vuexy</h2>
+            <h2 class="brand-text mb-0">Vuexy</h2>
           </a>
         </li>
         <li class="nav-item nav-toggle">
@@ -47,10 +47,7 @@
         </li>
 
         <!-- Members Dropdown -->
-        <li
-          class="nav-item"
-          :class="{ open: isOpen }"
-        >
+        <li class="nav-item" :class="{ open: isOpen }">
           <a href="javascript:void(0)" @click="toggleMenu">
             <i class="feather icon-users"></i>
             <span class="menu-title">Members</span>
@@ -58,21 +55,30 @@
               class="feather float-right mr-0"
               :class="{
                 'icon-chevron-right': isOpen,
-                'icon-chevron-down': !isOpen
+                'icon-chevron-down': !isOpen,
               }"
             ></i>
           </a>
           <ul class="menu-content">
-            <li :class="{ active: route.path === '/dashboard/members' ||
-           route.path == `/dashboard/members/${route.params.id}` ||
-           route.path == `/dashboard/members/transactions/${route.params.id}`
-            }" >
+            <li
+              :class="{
+                active:
+                  route.path === '/dashboard/members' ||
+                  route.path == `/dashboard/members/${route.params.id}` ||
+                  route.path ==
+                    `/dashboard/members/transactions/${route.params.id}`,
+              }"
+            >
               <NuxtLink to="/dashboard/members">
                 <i class="feather icon-circle"></i>
                 <span class="menu-item">List</span>
               </NuxtLink>
             </li>
-            <li :class="{ active: route.path.startsWith('/dashboard/members/pending') }">
+            <li
+              :class="{
+                active: route.path.startsWith('/dashboard/members/pending'),
+              }"
+            >
               <NuxtLink to="/dashboard/members/pending">
                 <i class="feather icon-circle"></i>
                 <span class="menu-item">Pending</span>
@@ -82,17 +88,34 @@
         </li>
 
         <!-- transactions -->
-        <li class="nav-item" :class="{ active: route.path === '/dashboard/transactions' }">
+        <li
+          class="nav-item"
+          :class="{ active: route.path === '/dashboard/transactions' }"
+        >
           <NuxtLink to="/dashboard/transactions">
             <i class="feather icon-server"></i>
             <span class="menu-item">Transactions</span>
           </NuxtLink>
         </li>
-            <!-- Admins -->
-            <li class="nav-item" :class="{ active: route.path === '/dashboard/admins' }">
+        <!-- Admins -->
+        <li
+          class="nav-item"
+          :class="{ active: route.path === '/dashboard/admins' }"
+        >
           <NuxtLink to="/dashboard/admins">
             <i class="feather icon-users"></i>
             <span class="menu-item">Admins</span>
+          </NuxtLink>
+        </li>
+        <!-- countries -->
+
+        <li
+          class="nav-item"
+          :class="{ active: route.path === '/dashboard/countries' }"
+        >
+          <NuxtLink to="/dashboard/countries">
+            <i class="feather icon-globe"></i>
+            <span class="menu-item">Countries</span>
           </NuxtLink>
         </li>
       </ul>
@@ -102,11 +125,10 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import { useRoute } from "vue-router";
+import { ref, onMounted } from "vue";
 
 const route = useRoute();
-
 
 const isOpen = ref(false);
 const menuCollapsed = ref(false);
@@ -119,13 +141,13 @@ function toggleMenu() {
 // Toggle Sidebar Collapse/Expand
 function toggleSidebar() {
   menuCollapsed.value = !menuCollapsed.value;
-  document.body.classList.toggle('menu-collapsed', menuCollapsed.value);
-  document.body.classList.toggle('menu-expanded', !menuCollapsed.value);
+  document.body.classList.toggle("menu-collapsed", menuCollapsed.value);
+  document.body.classList.toggle("menu-expanded", !menuCollapsed.value);
 }
 
 // Optional: on load, ensure one class is set
 onMounted(() => {
-  document.body.classList.add('menu-expanded');
+  document.body.classList.add("menu-expanded");
 });
 </script>
 

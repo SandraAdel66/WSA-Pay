@@ -1,34 +1,33 @@
 <template>
   <Breadcrumb
-    title="Member Transactions"
-    :items="[{ label: 'List of transactions', to: '/transactions' }]"
+    title="Countries"
+    :items="[{ label: 'List of countries', to: '/countries' }]"
     :add="false"
     :filters="false"
   />
 
   <Table
-    v-if="transactions && transactions.data"
+    v-if="countries && countries.data"
     :columns="columns"
-    :data="transactions.data"
-    :meta="transactions.meta"
+    :data="countries.data"
+    :meta="countries.meta"
     @change-page="handlePageChange"
     @change-per-page="handlePerPageChange"
     @change-search="handleSearchChange"
     @sort-data="handleSortData"
+    @change-status="handleStatus"
     :deleteBtns="false"
-    :tableTitle="'transactions'"
-
+    :tableTitle="'countries'"
   />
 </template>
-
-<script setup>
+  
+  <script setup>
 import { ref, watch } from "vue";
 import Breadcrumb from "@/components/theme/Breadcrumb.vue";
 import Table from "@/components/theme/Table.vue";
+const { updateStatus } = useApiStatusUpdate();
 
-const route = useRoute();
-const memberId = route.params.id;
-
+const notify = useNotify();
 const currentPage = ref(1);
 const perPage = ref(5);
 const search = ref("");
@@ -36,20 +35,20 @@ const sortColumn = ref(null);
 const sortDirection = ref(null);
 const showDeleted = ref(false);
 
-const transactions = ref(null);
+const countries = ref(null);
+
 // Table Columns
 const columns = [
-  { label: "Amount", key: "amount"},
-  { label: "Balance Type", key: "type"},
-  { label: "Currency", key: "currency"},
-  { label: "Created At", key: "created_at" },
-
+  { label: "Name", key: "name" },
+  { label: "Key", key: "key" },
+  { label: "Active", key: "active" },
+  { label: "Created At", key: "createdAt" },
 ];
 
 // API Data Fetch
 const { data, refresh } = useApiIndex({
-  api: `history-wallet-transactions/${memberId}`,
-  key: "transactions-list",
+  api: `country`,
+  key: "countries-list",
   watch: [currentPage, perPage, search, sortColumn, sortDirection, showDeleted],
   params: () => ({
     page: currentPage.value,
@@ -64,7 +63,7 @@ const { data, refresh } = useApiIndex({
 watch(
   data,
   (newData) => {
-    transactions.value = newData;
+    countries.value = newData;
   },
   { immediate: true }
 );
@@ -94,6 +93,14 @@ const handleSortData = (column) => {
   sortColumn.value = column.key;
   sortDirection.value = column.sort;
 };
+const handleStatus = async ({ id, value }) => {
+  await updateStatus({
+    api: "country",
+    id,
+    status: value, // true or false
+  });
 
-
+  notify.success("Satus Changed Successfully");
+};
 </script>
+  

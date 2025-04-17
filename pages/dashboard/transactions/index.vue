@@ -16,6 +16,7 @@
       @change-search="handleSearchChange"
       @sort-data="handleSortData"
       :deleteBtns="false"
+      :tableTitle="'transactions'"
   
     />
   </template>
