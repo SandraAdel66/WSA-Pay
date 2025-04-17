@@ -134,14 +134,19 @@
                 >
                   <!-- Custom user info for first column on members page -->
                   <ThemeUserInfo
+                    v-if="
+                      colIndex === 0 &&
+                      (route.path === '/dashboard/members' ||
+                        route.path === '/dashboard/members/pending')
+                    "
                     :name="item.name"
                     :logo="item.logo"
                     :countryName="item.country?.name || 'N/A'"
                     :city="item.city || 'N/A'"
                     :countryFlag="item.country?.flag"
                     :email="item.email"
-                    v-if="colIndex === 0 && route.path == '/dashboard/members'"
                   />
+
                   <div
                     v-else-if="tableTitle == 'countries' && col.key === 'name'"
                   >

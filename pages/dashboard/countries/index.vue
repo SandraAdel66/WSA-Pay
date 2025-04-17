@@ -96,7 +96,9 @@ const handleSortData = (column) => {
 const handleStatus = async ({ id, value }) => {
   await updateStatus({
     api: "country",
+    type: "active",
     id,
+    method: "PUT",
     status: value, // true or false
   });
 

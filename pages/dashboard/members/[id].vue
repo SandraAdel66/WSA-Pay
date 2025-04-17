@@ -1,7 +1,31 @@
 <template>
-  <div v-if="pending">Loading...</div>
-  <div v-else-if="error">Error: {{ error.message }}</div>
-  <div v-else>
+  <div class="row">
+    <div class="col-md-10">
+      <ThemeBreadcrumb
+        title="Member"
+        :items="[{ label: 'member details', to: '/countries' }]"
+        :add="false"
+        :filters="false"
+      />
+    </div>
+    <div class="col-md-2">
+      <select
+        v-model="member.data.status"
+        @change="onStatusChange($event.target.value)"
+        class="bg-select"
+      >
+        <option
+          v-for="option in statusOptions"
+          :key="option.value"
+          :value="option.value"
+        >
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div>
     <Modal
       :showModal="showModal"
       @update:showModal="showModal = $event"
@@ -99,6 +123,8 @@
                   <tr>
                     <th class="text-muted">Status</th>
                     <td>
+                      <!-- Status Selector -->
+
                       <div
                         :class="[
                           'text-bold-600',
@@ -134,7 +160,10 @@
               <i class="feather icon-save mr-50"></i>
               Balances
             </div>
-            <div class="btn btn-primary avatar m-0 btn-icon p-0" @click="openAddModal">
+            <div
+              class="btn btn-primary avatar m-0 btn-icon p-0"
+              @click="openAddModal"
+            >
               <div class="avatar-content">
                 <i
                   class="feather icon-plus font-medium-3"
@@ -170,10 +199,12 @@
             </div>
           </div>
           <div class="">
-            <h5 class="card-title d-flex justify-content-between align-items-center">
+            <h5
+              class="card-title d-flex justify-content-between align-items-center"
+            >
               <div>
                 <i class="feather icon-lock mr-50"></i>
-              Latest Transactions
+                Latest Transactions
               </div>
               <div class="chip bg-chip cursor-pointer" @click="allTransactions">
                 <div class="chip-body">
@@ -248,25 +279,25 @@
             <div class="card-body card-padding">
               <div class="table-responsive">
                 <table class="table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Display Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Created At</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="sub in member.data?.subAccounts" :key="sub.id">
-                    <td>{{ sub.name }}</td>
-                    <td>{{ sub.displayName }}</td>
-                    <td>{{ sub.email }}</td>
-                    <td>{{ sub.phone }}</td>
-                    <td>{{ sub.createdAt }}</td>
-                  </tr>
-                </tbody>
-              </table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Display Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Created At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="sub in member.data?.subAccounts" :key="sub.id">
+                      <td>{{ sub.name }}</td>
+                      <td>{{ sub.displayName }}</td>
+                      <td>{{ sub.email }}</td>
+                      <td>{{ sub.phone }}</td>
+                      <td>{{ sub.createdAt }}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -283,8 +314,7 @@ const memberId = route.params.id;
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-
-
+const { updateStatus } = useApiStatusUpdate();
 import Modal from "@/components/theme/Modal.vue";
 
 const notify = useNotify();
@@ -390,6 +420,51 @@ const copyToClipboard = (email) => {
 };
 
 const allTransactions = () => {
-  router.push(`transactions/${memberId}`)
-}
+  router.push(`transactions/${memberId}`);
+};
+
+const statusOptions = [
+  { label: "Pending", value: "pending" },
+  { label: "Approved", value: "approved" },
+  { label: "Suspended", value: "suspended" },
+  { label: "Deactivate", value: "deactivate" },
+];
+
+// Change handler (with API call)
+const onStatusChange = async (newStatus) => {
+  await updateStatus({
+    api: "members",
+    type: "status",
+    id: memberId,
+    method: "POST",
+    status: newStatus, // true or false
+  });
+
+  notify.success("Satus Changed Successfully");
+};
 </script>
+
+
+<style>
+.bg-select {
+  background-color: #e6e6e6;
+  transition: 0.3s ease-in-out;
+  font-weight: 500;
+  box-shadow: 1px 1px 2px 1px #cacaca;
+  display: inline-flex;
+  margin-bottom: 5px;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  vertical-align: middle;
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+  align-self: center;
+  border: none;
+  border-radius: 15px;
+  font-size: 13px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+</style>
