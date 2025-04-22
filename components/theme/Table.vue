@@ -205,10 +205,10 @@
                     >
                       <i class="feather icon-trash"></i>
                     </button>
-                    <button
+                    <button 
                       class="btn btn-light btn-icon rounded-circle"
                       @click="viewItem(item.id)"
-                    >
+                      v-if="tableTitle !== 'admins'">
                       <i class="feather icon-eye"></i>
                     </button>
                   </span>
@@ -298,7 +298,7 @@ const { formatDate } = useFormatDate();
 const route = useRoute();
 const props = defineProps({
   data: {
-    type: [], // Define the type of items in the data array
+    type: Array, // Define the type of items in the data array
     required: true,
   },
   meta: {
@@ -312,11 +312,10 @@ const props = defineProps({
     type: String,
   },
   columns: {
-    type: [],
+    type: Array,
     required: true,
   },
 });
-console.log(props.tableTitle);
 
 const emit = defineEmits([
   "change-per-page",

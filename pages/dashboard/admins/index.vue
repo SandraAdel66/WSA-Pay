@@ -34,6 +34,8 @@
     @get-items="showAllItems"
     @sort-data="handleSortData"
     :deleteBtns="true"
+    :tableTitle="'admins'"
+
   />
 </template>
 
@@ -64,9 +66,9 @@ const admins = ref(null)
 
 // Table Columns
 const columns = [
-  { label: "Name", key: "name", tableTitle: "admins" },
-  { label: "Email", key: "email", tableTitle: "admins" },
-  { label: "Actions", key: "actions", tableTitle: "admins" },
+  { label: "Name", key: "name" },
+  { label: "Email", key: "email" },
+  { label: "Actions", key: "actions" },
 
 
 ]

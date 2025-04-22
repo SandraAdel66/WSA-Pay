@@ -59,7 +59,7 @@
   />
   <ModalFilter
     v-if="filter"
-    :title="'Filter Members'"
+    :title="'Filter Transactions'"
     :items="filterItems"
     :modalFilter="modalFilter"
     @close="modalFilter = false"

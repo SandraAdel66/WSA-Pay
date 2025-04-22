@@ -32,6 +32,7 @@ export default defineNuxtConfig({
   },
 
   modules: ['@nuxt/content', '@nuxt/fonts', '@nuxt/icon',
+    '@nuxt/ui',
     '@nuxt/image', '@nuxt/scripts', '@pinia/nuxt', '@nuxt/ui', 'nuxt-charts'],
 
   image: {

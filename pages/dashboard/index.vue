@@ -45,7 +45,7 @@
           <BarChart />
         </div>
       </div>
-      <div class="col-md-12">
+      <div class="col-md-12 mt-2">
         <div class="card p-2 h-full">
           <LineChart />
         </div>

@@ -10,7 +10,6 @@
     />
   </ClientOnly>
 
-
   <Modal
     :showModal="showModal"
     @update:showModal="showModal = $event"

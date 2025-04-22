@@ -71,10 +71,7 @@ const props = defineProps({
     type: String,
     default: "",
   },
-  id: {
-    type: [String, Number],
-    default: null,
-  },
+
 });
 
 // Status list

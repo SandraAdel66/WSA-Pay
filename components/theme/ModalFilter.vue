@@ -49,7 +49,6 @@
             <FilterComponent
               :fields="items"
               @close="closeModal"
-              :id="id"
               :title="title"
               @filter-filters="submitFilters"
               @reset-filters="resetFilters"
