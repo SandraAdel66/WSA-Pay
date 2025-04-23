@@ -33,6 +33,10 @@
         <button type="button" class="btn btn-primary btn-icon mar" v-if="filter" @click="openModalFilter">
           <i class="feather icon-filter"></i>
         </button>
+        <button type="button" class="w-8 hh-8 rounded-md mar" v-if="exportBtn"
+         @click="exportData">
+          <img src="/app-assets/images/icons/pdf.png" class="rounded-md w-full">
+        </button>
       </div>
     </div>
   </div>
@@ -57,17 +61,22 @@ defineProps({
   filter: {
     type: Boolean,
     default: false,
-  }
+  },
+  exportBtn: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Emitting the event to open the modal
 const openModal = () => {
   emit('openModal', true);
 };
-const openModalFilter = () => {
-  console.log('openModalFilter');
-  
+const openModalFilter = () => {  
   emit('open-filter', true);
+};
+const exportData = () => {
+  emit('export-data', true);
 };
 </script>
 

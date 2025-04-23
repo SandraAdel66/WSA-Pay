@@ -28,8 +28,12 @@
     @filter-filters="submitFilters"
     @reset-filters="resetFilters"
   />
+  <div v-if="members === null" class="bg-white">
+    <ThemeSkelton :columns="columns"/>
+  </div>
+  
   <Table
-    v-if="members && members.data"
+    v-if="members && members.data && members.data.length > 0"
     :columns="columns"
     :data="members.data"
     :meta="members.meta"
@@ -75,8 +79,8 @@ const formFields = ref([]);
 const currentPage = ref(1);
 const perPage = ref(5);
 const search = ref("");
-const sortColumn = ref(null);
-const sortDirection = ref(null);
+const sortColumn = ref('id');
+const sortDirection = ref('desc');
 const showDeleted = ref(false);
 const modalFilter = ref(false);
 const appliedFilters = ref({});

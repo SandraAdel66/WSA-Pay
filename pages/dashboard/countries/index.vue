@@ -5,9 +5,11 @@
     :add="false"
     :filters="false"
   />
-
+  <div v-if="countries === null" class="bg-white">
+    <ThemeSkelton :columns="columns"/>
+  </div>
   <Table
-    v-if="countries && countries.data"
+    v-if="countries && countries.data && countries.data.length > 0"
     :columns="columns"
     :data="countries.data"
     :meta="countries.meta"
@@ -31,8 +33,8 @@ const notify = useNotify();
 const currentPage = ref(1);
 const perPage = ref(5);
 const search = ref("");
-const sortColumn = ref(null);
-const sortDirection = ref(null);
+const sortColumn = ref('id');
+const sortDirection = ref('desc');
 const showDeleted = ref(false);
 
 const countries = ref(null);

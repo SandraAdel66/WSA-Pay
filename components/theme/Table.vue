@@ -208,7 +208,7 @@
                     <button 
                       class="btn btn-light btn-icon rounded-circle"
                       @click="viewItem(item.id)"
-                      v-if="tableTitle !== 'admins'">
+                      v-if="tableTitle !== 'admins' && tableTitle !== 'roles'">
                       <i class="feather icon-eye"></i>
                     </button>
                   </span>

@@ -4,7 +4,7 @@
 
     <!-- Text, Email, Password -->
     <input
-      v-if="['text', 'email', 'password'].includes(field.type)"
+      v-if="['text', 'email', 'password', 'date'].includes(field.type)"
       v-model="field.value"
       :type="field.type"
       :name="field.name"
@@ -82,6 +82,18 @@ const statuses = [
   { id: "blacklisted", name: "Blacklisted", code: "blacklisted" },
 ];
 
+// Status list
+const currencies = [
+  { id: "USD", name: "USD", code: "usd" },
+  { id: "EUR", name: "EUR", code: "eur" },
+  { id: "AUD", name: "AUD", code: "AUD" },
+];
+
+// Status list
+const types = [
+  { id: "withdraw", name: "Withdraw" },
+  { id: "add", name: "Add" }
+];
 // Use countries composable
 const { data: countries } = useCountries();
 
@@ -103,6 +115,12 @@ const processedFields = computed(() => {
     }
     if (field.type === "select" && field.name === "status") {
       return { ...field, data: statuses };
+    }
+    if (field.type === "select" && field.name === "currency") {
+      return { ...field, data: currencies };
+    }
+    if (field.type === "select" && field.name === "type") {
+      return { ...field, data: types };
     }
     return field;
   });

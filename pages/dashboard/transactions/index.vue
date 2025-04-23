@@ -5,21 +5,27 @@
       :items="[{ label: 'List of transactions', to: '/transactions' }]"
       :add="false"
       :filter="(filter = true)"
+      :exportBtn="true"
       @open-filter="openModalFilter"
+      @export-data="exportData"
     />
   </ClientOnly>
 
   <ModalFilter
     v-if="filter"
-    :title="'Filter Members'"
+    :title="'Filter Transactions'"
     :items="filterItems"
     :modalFilter="modalFilter"
     @close="modalFilter = false"
     @filter-filters="submitFilters"
     @reset-filters="resetFilters"
   />
+  <div v-if="transactions === null" class="bg-white">
+    <ThemeSkelton :columns="columns"/>
+  </div>
+  
   <Table
-    v-if="transactions && transactions.data"
+    v-if="transactions && transactions.data && transactions.data.length > 0"
     :columns="columns"
     :data="transactions.data"
     :meta="transactions.meta"
@@ -40,8 +46,8 @@ import ModalFilter from "@/components/theme/ModalFilter.vue";
 const currentPage = ref(1);
 const perPage = ref(5);
 const search = ref("");
-const sortColumn = ref(null);
-const sortDirection = ref(null);
+const sortColumn = ref('id');
+const sortDirection = ref('desc');
 const showDeleted = ref(false);
 
 const transactions = ref(null);
@@ -53,10 +59,31 @@ const modalFilter = ref(false);
 
 const filterItems = [
   {
-    name: "name",
-    label: "Name",
-    type: "text",
-    placeholder: "Enter name",
+    name: "from",
+    label: "From Date",
+    type: "date",
+    placeholder: "Enter date",
+    class: "form-control",
+  },
+  {
+    name: "to",
+    label: "To Date",
+    type: "date",
+    placeholder: "Enter date",
+    class: "form-control",
+  },
+  {
+    name: "currency",
+    label: "Currency",
+    type: "select",
+    placeholder: "Enter currencies",
+    class: "form-control",
+  },
+  {
+    name: "type",
+    label: "Type",
+    type: "select",
+    placeholder: "Enter types",
     class: "form-control",
   },
 ];
@@ -144,6 +171,42 @@ const submitFilters = (filters) => {
 const openModalFilter = () => {
   modalFilter.value = true;
 };
+
+const exportData = async () => {
+  try {
+    const { data, error } = await useApiPdf({
+      api: 'transactions-pdf',
+      filters: appliedFilters.value,
+      order_by: sortColumn.value,
+      sort: sortDirection.value,
+      params: () => ({
+        search: search.value,
+        page: currentPage.value,
+        per_page: perPage.value,
+      }),
+    });
+
+    if (error.value) {
+      console.error("Export failed:", error.value);
+      return;
+    }
+
+    if (data.value) {
+      const blob = new Blob([data.value], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'transactions-report.pdf';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+  } catch (e) {
+    console.error("Unexpected error during export:", e);
+  }
+};
+
 // ========== Cleanup ==========
 onBeforeUnmount(() => {
   appliedFilters.value = {};

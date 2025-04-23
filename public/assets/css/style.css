@@ -180,6 +180,7 @@ table.data-thumb-view.dataTable tbody td {
   font-size: 12px;
   line-height: 1;
   margin-bottom: 5px;
+  display: flex;
 }
 .table-report b {
   font-size: 13px;
@@ -206,8 +207,12 @@ table.data-thumb-view.dataTable tbody td {
 }
 .radius-2 {
   border-radius: 4px;
-}
+  margin: 0 5px 0 0;
 
+}
+.icon-mail {
+  margin: 0 2px 0 0;
+}
 .bg-chip {
   background-color: #e6e6e6; 
   transition: 0.3s ease-in-out;

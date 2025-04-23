@@ -73,7 +73,7 @@
                   <input
                     class="form-control input"
                     type="text"
-                    placeholder="Explore Vuexy..."
+                    placeholder="Explore WSAPAY..."
                     tabindex="0"
                     data-search="template-list"
                   />
@@ -107,7 +107,7 @@
                 <input
                   class="input"
                   type="text"
-                  placeholder="Explore Vuexy..."
+                  placeholder="Explore WSAPAY..."
                   tabindex="-1"
                   data-search="template-list"
                 />
@@ -276,7 +276,7 @@
                 data-toggle="dropdown"
               >
                 <div class="user-nav d-sm-flex d-none">
-                  <span class="user-name text-bold-600">John Doe</span
+                  <span class="user-name text-bold-600">{{authStore.user?.name ?? ''}}</span
                   ><span class="user-status">Available</span>
                 </div>
                 <span
@@ -288,11 +288,9 @@
                     width="40" /></span
               ></a>
               <div class="dropdown-menu dropdown-menu-right">
-                <a class="dropdown-item" href="javascript:void(0)"
-                  ><i class="feather icon-user"></i> Edit Profile</a>
+             
                 
                 
-                <div class="dropdown-divider"></div>
                 <a class="dropdown-item" @click="logout"
                   ><i class="feather icon-power"></i> Logout</a
                 >

@@ -1,7 +1,7 @@
 <template>
   <Breadcrumb
-    title="Admin"
-    :items="[{ label: 'List of admins', to: '/admins' }]"
+    title="Roles"
+    :items="[{ label: 'List of roles', to: '/roles' }]"
     :add="true"
     :filters="false"
     @openModal="openAddModal"
@@ -14,18 +14,18 @@
     :title="modalTitle"
     :apiTitle="apiTitle"
     :id="selectedId"
-    :apiName="'admin'"
+    :apiName="'roles'"
     :refresh="refresh"
   />
-  
-  <div v-if="admins === null" class="bg-white">
-    <ThemeSkelton :columns="columns"/>
+
+  <div v-if="roles === null" class="bg-white">
+    <ThemeSkelton :columns="columns" />
   </div>
   <Table
-    v-if="admins && admins.data && admins.data.length > 0"
+    v-if="roles && roles.data && roles.data.length > 0"
     :columns="columns"
-    :data="admins.data"
-    :meta="admins.meta"
+    :data="roles.data"
+    :meta="roles.meta"
     @change-page="handlePageChange"
     @change-per-page="handlePerPageChange"
     @change-search="handleSearchChange"
@@ -36,24 +36,23 @@
     @get-items="showAllItems"
     @sort-data="handleSortData"
     :deleteBtns="true"
-    :tableTitle="'admins'"
-
+    :tableTitle="'roles'"
   />
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
-import { useNuxtApp } from '#app'
-import Breadcrumb from '@/components/theme/Breadcrumb.vue'
-import Modal from '@/components/theme/Modal.vue'
-import Table from '@/components/theme/Table.vue'
+import { ref, watch } from "vue";
+import { useNuxtApp } from "#app";
+import Breadcrumb from "@/components/theme/Breadcrumb.vue";
+import Modal from "@/components/theme/Modal.vue";
+import Table from "@/components/theme/Table.vue";
 
 const { $swal } = useNuxtApp();
 
 // Refs & Reactive States
 const showModal = ref(false);
 const modalTitle = ref("");
-const apiTitle = ref("add")
+const apiTitle = ref("add");
 const selectedId = ref(null);
 const formFields = ref([]);
 
@@ -61,32 +60,43 @@ const currentPage = ref(1);
 const perPage = ref(5);
 const search = ref("");
 const showDeleted = ref(false);
-const sortColumn = ref('id');
-const sortDirection = ref('desc');
+const sortColumn = ref("id");
+const sortDirection = ref("desc");
 
-const admins = ref(null)
+const roles = ref(null);
 
 // Table Columns
 const columns = [
-  { label: "Name", key: "name" },
-  { label: "Email", key: "email" },
+  { label: "Role", key: "name" },
   { label: "Actions", key: "actions" },
-
-
-]
+];
+const { permissions } = usePermissions();
 
 // Modal Form Fields Config
 const formFieldsConfig = [
-  { name: "name", label: "Name", type: "text", placeholder: "Enter name", required: true, class: "form-control" },
-  { name: "email", label: "Email", type: "email", placeholder: "Enter email", required: true, class: "form-control" },
-  { name: "password", label: "Password", type: "password", required: false, class: "form-control" },
+  {
+    name: "role",
+    label: "Role Name",
+    type: "text",
+    placeholder: "Enter name",
+    required: true,
+    class: "form-control",
+  },
+  {
+    name: "permissions",
+    type: "checkbox",
+    placeholder: "Select permissions",
+    required: true,
+    class: "form-control",
+    options:permissions,
+  },
 
-]
+];
 
 // API Data Fetch
-const { data, refresh} = useApiIndex({
-  api: "admin",
-  key: "admins-list",
+const { data, refresh } = useApiIndex({
+  api: "roles",
+  key: "roles-list",
   watch: [currentPage, perPage, search, sortColumn, sortDirection, showDeleted],
   params: () => ({
     page: currentPage.value,
@@ -96,92 +106,94 @@ const { data, refresh} = useApiIndex({
     sort: sortDirection.value,
     deleted: showDeleted.value,
   }),
-})
+});
 
 // Sync data on change or page reload
-watch(data, (newData) => {
-  admins.value = newData
-}, { immediate: true })
+watch(
+  data,
+  (newData) => {
+    roles.value = newData;
+  },
+  { immediate: true }
+);
 
 // Page Meta
 definePageMeta({
   layout: "default",
   middleware: "auth",
-  title: "Admins",
-})
+  title: "Roles",
+});
 
 // ========== Modal Functions ==========
 const openAddModal = () => {
-  modalTitle.value = "Add Admin"
-  apiTitle.value = "add"
-  selectedId.value = null
-  formFields.value = formFieldsConfig.map(f => ({ ...f, value: "" }))
-  showModal.value = true
-}
+  modalTitle.value = "Add Role";
+  apiTitle.value = "add";
+  selectedId.value = null;
+  formFields.value = formFieldsConfig.map((f) => ({ ...f, value: "" }));
+  showModal.value = true;
+};
 
 const openEditModal = (item) => {
-  modalTitle.value = "Edit Admin"
-  apiTitle.value = "update"
-  selectedId.value = item.id
-  formFields.value = formFieldsConfig.map(f => ({
+  modalTitle.value = "Edit Role";
+  apiTitle.value = "update";
+  selectedId.value = item.id;
+  formFields.value = formFieldsConfig.map((f) => ({
     ...f,
-    value: f.name === "password" ? "" : item[f.name]
-  }))
-  showModal.value = true
-}
+    value: f.name === "password" ? "" : item[f.name],
+  }));
+  showModal.value = true;
+};
 
 // ========== Table Handlers ==========
 const handlePageChange = (url) => {
-  const page = new URL(url).searchParams.get("page")
-  if (page) currentPage.value = Number(page)
-}
+  const page = new URL(url).searchParams.get("page");
+  if (page) currentPage.value = Number(page);
+};
 
 const handlePerPageChange = (value) => {
-  perPage.value = Number(value)
-}
+  perPage.value = Number(value);
+};
 
 const handleSearchChange = (value) => {
-  search.value = value
-}
+  search.value = value;
+};
 
 const handleSortData = (column) => {
-  sortColumn.value = column.key
-  sortDirection.value = column.sort
-  
-  
-}
+  sortColumn.value = column.key;
+  sortDirection.value = column.sort;
+};
 
 // ========== Deletion ==========
 const handleDeleteItem = async (id) => {
   if (await confirmDelete()) {
-    const { data } = await useApiDelete({ api: "admin", ids: [id] })
+    const { data } = await useApiDelete({ api: "roles", ids: [id] });
     if (data) {
-      showDeleteSuccess()
-      refresh()
+      showDeleteSuccess();
+      refresh();
     }
   }
 };
 
 const handleDeleteSelected = async (ids) => {
   if (await confirmDelete(ids.length)) {
-    const { data } = await useApiDelete({ api: "admin", ids })
+    const { data } = await useApiDelete({ api: "roles", ids });
     if (data) {
-      showDeleteSuccess()
-      refresh()
+      showDeleteSuccess();
+      refresh();
     }
   }
 };
 
 // ========== Toggle Deleted ==========
 const showDeletedItems = () => {
-  showDeleted.value = true
-  currentPage.value = 1
-}
+  showDeleted.value = true;
+  currentPage.value = 1;
+};
 
 const showAllItems = () => {
-  showDeleted.value = false
-  currentPage.value = 1
-}
+  showDeleted.value = false;
+  currentPage.value = 1;
+};
 
 // ========== Alerts ==========
 const confirmDelete = async (count = 1) => {
@@ -195,12 +207,12 @@ const confirmDelete = async (count = 1) => {
     confirmButtonText: "Yes, delete it!",
     customClass: { popup: "custom-swal-popup" },
     didOpen: () => {
-      const popup = document.querySelector(".swal2-popup")
-      if (popup) popup.style.gridRow = "1"
-    }
-  })
-  return result.isConfirmed
-}
+      const popup = document.querySelector(".swal2-popup");
+      if (popup) popup.style.gridRow = "1";
+    },
+  });
+  return result.isConfirmed;
+};
 
 const showDeleteSuccess = () => {
   $swal.fire({
@@ -210,11 +222,11 @@ const showDeleteSuccess = () => {
     confirmButtonText: "OK",
     customClass: { popup: "custom-swal-popup" },
     didOpen: () => {
-      const popup = document.querySelector(".swal2-popup")
-      if (popup) popup.style.gridRow = "1"
-    }
-  })
-}
+      const popup = document.querySelector(".swal2-popup");
+      if (popup) popup.style.gridRow = "1";
+    },
+  });
+};
 </script>
 
 <style scoped>

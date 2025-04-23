@@ -6,11 +6,12 @@
         :items="[{ label: 'member details', to: '/countries' }]"
         :add="false"
         :filters="false"
+        :exportBtn="false"
       />
     </div>
     <div class="col-md-2">
       <select
-        v-model="member.data.status"
+        v-model="status"
         @change="onStatusChange($event.target.value)"
         class="bg-select"
       >
@@ -24,8 +25,10 @@
       </select>
     </div>
   </div>
-
-  <div>
+  <div v-if="member === null" class="bg-white">
+    <ThemeSkelton/>
+  </div>
+  <div v-if="member&& member.data">
     <Modal
       :showModal="showModal"
       @update:showModal="showModal = $event"
@@ -47,10 +50,7 @@
               <div class="media">
                 <a href="javascript: void(0);">
                   <img
-                    :src="
-                      member.data?.logo ??
-                      '/app-assets/images/logo/no-image-icon.png'
-                    "
+                    :src="member.data?.logo ?? '/app-assets/images/logo/no-image-icon.png'"
                     class="rounded mr-75"
                     alt="profile image"
                     height="64"
@@ -316,7 +316,7 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const { updateStatus } = useApiStatusUpdate();
 import Modal from "@/components/theme/Modal.vue";
-
+const status = ref(null);
 const notify = useNotify();
 const {
   data: member,
@@ -326,9 +326,12 @@ const {
   api: "members",
   id: memberId,
 });
+
+console.log(member.value);
+
 // Refs & Reactive States
 const showModal = ref(false);
-
+status.value = member?.data?.status ?? "pending";
 const modalTitle = ref("");
 const apiTitle = ref("add");
 const formFields = ref([]);

@@ -10,7 +10,7 @@
       id="animation"
     >
       <div class="modal-dialog modal-dialog-scrollable" role="document">
-        <div class="modal-content">
+        <div class="modal-content ">
           <div class="modal-header">
             <h4 class="modal-title" id="myModalLabel1">{{ title }}</h4>
             <button type="button" class="close" @click="closeModal" aria-label="Close">
