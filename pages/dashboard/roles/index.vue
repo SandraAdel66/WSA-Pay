@@ -75,7 +75,7 @@ const { permissions } = usePermissions();
 // Modal Form Fields Config
 const formFieldsConfig = [
   {
-    name: "role",
+    name: "name",
     label: "Role Name",
     type: "text",
     placeholder: "Enter name",
@@ -134,6 +134,7 @@ const openAddModal = () => {
 };
 
 const openEditModal = (item) => {
+  console.log(item);
   modalTitle.value = "Edit Role";
   apiTitle.value = "update";
   selectedId.value = item.id;
