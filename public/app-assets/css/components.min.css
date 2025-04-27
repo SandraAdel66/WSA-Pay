@@ -738,7 +738,7 @@ body.fixed-footer footer.footer-dark {
   width: 260px;
   height: 5rem;
   position: relative;
-  padding: 0.35rem 1rem 0.3rem 1.64rem;
+  padding: 0 18px;
   -webkit-transition: 0.3s ease all;
   transition: 0.3s ease all;
 }

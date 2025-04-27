@@ -4,12 +4,13 @@
     class="main-menu menu-fixed menu-light menu-accordion menu-shadow"
     data-scroll-to-active="true"
   >
-    <div class="navbar-header">
+    <div class="navbar-header mb-2">
       <ul class="nav navbar-nav flex-row">
         <li class="nav-item mr-auto">
           <a class="navbar-brand" href="#">
-            <div class="brand-logo"></div>
-            <h2 class="brand-text mb-0">WSAPAY</h2>
+            <img src="/app-assets/images/logo/logo.svg" style="width: 45px;" srcset="">
+            <h2 class="brand-text mb-0">WSA PAY</h2>
+
           </a>
         </li>
         <li class="nav-item nav-toggle">
@@ -30,7 +31,7 @@
 
     <div class="main-menu-content">
       <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
-        <li class="navigation-header"><span>Analytics</span></li>
+        <li class="navigation-header mt-0"><span>Analytics</span></li>
 
         <!-- Dashboard -->
         <li class="nav-item" :class="{ active: route.path === '/dashboard' }">
