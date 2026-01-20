@@ -1,0 +1,234 @@
+/*================================================================================
+	Item Name: Vuexy - Vuejs, HTML & Laravel Admin Dashboard Template
+	Version: 2.0
+	Author: PIXINVENT
+	Author URL: http://www.themeforest.net/user/pixinvent
+================================================================================
+
+NOTE:
+------
+PLACE HERE YOUR OWN SCSS CODES AND IF NEEDED, OVERRIDE THE STYLES FROM THE OTHER STYLESHEETS.
+WE WILL RELEASE FUTURE UPDATES SO IN ORDER TO NOT OVERWRITE YOUR STYLES IT'S BETTER LIKE THIS.  */
+
+/*========================================================
+        DARK LAYOUT
+=========================================================*/
+.bg-authentication {
+  background-color: #eff2f7;
+}
+.bg-authentication .login-footer {
+  padding: 0rem 1.5rem 0.5rem;
+}
+.bg-authentication .login-footer .footer-btn .btn {
+  padding: 0.9rem 1.2rem !important;
+  margin: 1rem 1rem 1rem 0rem;
+}
+
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  .bg-authentication {
+    width: 100%;
+  }
+}
+
+.main-menu {
+  /* border-right: 3px solid #a3079d; */
+  border-top-right-radius: 10px;
+}
+
+.card {
+  border-radius: 15px;
+  box-shadow: 0 1px 8px 0 rgb(0 0 0 / 10%) !important;
+}
+
+.btnOut {
+  padding: 10px 6px !important;
+  font-weight: 600;
+}
+.spaced-table {
+  border-collapse: separate;
+  border-spacing: 0 10px; /* horizontal: 0, vertical: 10px */
+}
+table.data-list-view.dataTable tbody td,
+table.data-thumb-view.dataTable tbody td {
+  padding: 10px;
+}
+.vs-checkbox-con .vs-checkbox {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.vs-checkbox-con input:checked ~ .vs-checkbox .vs-checkbox--check .vs-icon {
+  -webkit-transform: translate(0);
+  -ms-transform: translate(0);
+  transform: translate(0);
+  line-height: 1;
+  opacity: 1;
+}
+.btn-icon {
+  margin: 2px;
+}
+
+.btn-light {
+  background-color: #e2e8f0 !important;
+  border-color: #e2e8f0 !important;
+  color: #4a5568 !important;
+}
+.btn-light:hover {
+  background-color: #cbd5e1 !important;
+  border-color: #cbd5e1 !important;
+  color: #2d3748 !important;
+}
+
+.user-details .text-muted {
+  color: #292929 !important;
+  font-size: 13px;
+}
+
+.user-details table tr {
+  border-top: 1px dashed #eee;
+}
+.user-details .media {
+  border-bottom: 1px dashed #eee;
+  padding-bottom: 10px;
+}
+.user-details .media-body label {
+  font-size: 13px;
+}
+.user-details table tr:first-child {
+  border-top: none;
+}
+.user-details table tr:last-child {
+  border-bottom: none;
+}
+.user-details .d-grid {
+  display: grid;
+}
+
+.user-details .table-text {
+  font-size: 13px;
+}
+
+.user-details .text-secondary {
+  color: #494949 !important;
+  font-weight: 500;
+  font-size: 12px !important;
+}
+.user-details .card-padding {
+  padding: 15px;
+}
+.user-details .card-balance {
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+.user-details .card-title {
+  margin-bottom: 15px;
+  margin-top: 15px;
+  font-size: 15px;
+}
+.user-details .balance-header {
+  border-bottom: 1px dashed #eee;
+  padding: 6px 15px !important;
+  display: flex;
+  align-items: center;
+}
+
+.user-details td{
+  font-size: 13px;
+
+}
+.user-details .balance-header:last-child {
+  border-bottom: none;
+}
+
+/* User Info */
+
+.user-info {
+  max-width: 300px;
+}
+.table-report {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: left;
+}
+.parent-image {
+  width: 60px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+}
+.table-report .companYlogo {
+  width: 100%;
+  border-radius: 5px;
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border: 1px solid rgb(197 197 197);
+  background-color: #f8f9fa;
+  padding: 5px;
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  height: 3.5rem;
+}
+.table-report h4 {
+  font-size: 13px;
+  line-height: 0.5;
+  margin-top: 5px;
+}
+
+.table-report p {
+  font-size: 12px;
+  line-height: 1;
+  margin-bottom: 5px;
+  display: flex;
+}
+.table-report b {
+  font-size: 13px;
+}
+.table-report p.font-bold {
+  font-size: 13px;
+}
+.email{
+  color: #660961;
+}
+.email:hover {
+  color: #5146b9;
+  text-decoration: underline;
+}
+.email small {
+  font-weight: bold;
+  font-size: 11px;
+}
+.balance-header h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.radius-2 {
+  border-radius: 4px;
+  margin: 0 5px 0 0;
+
+}
+.icon-mail {
+  margin: 0 2px 0 0;
+}
+.bg-chip {
+  background-color: #e6e6e6; 
+  transition: 0.3s ease-in-out;
+  font-weight: 600;
+  box-shadow: 1px 1px 2px 1px #cacaca;
+
+  }
+
+  .bg-chip:hover{
+    background-color: #c4c4c4; 
+
+  }
+
+
+  table.data-list-view.dataTable thead th, table.data-thumb-view.dataTable thead th {
+
+    text-align: left;
+    padding-left: 0;
+}

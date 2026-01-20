@@ -1,0 +1,7 @@
+npm install
+npm run generate
+
+
+If the .output folder is generated successfully locally, you can then try manually uploading the folder to your server using rsync:
+
+rsync -avz dist/ root@195.26.249.199:/var/www/vhosts/trexorstore.com/httpdocs/
