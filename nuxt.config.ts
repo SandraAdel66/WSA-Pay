@@ -15,25 +15,41 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      appUrl: process.env.APP_URL ?? 'https://trexorstore.com', // Default app URL
-      apiUrl: process.env.API_URL ?? 'https://admin.trexorstore.com', // No `/backend` appended here
+      appUrl: process.env.APP_URL ?? 'https://trexorstore.com',
+      apiUrl: process.env.NODE_ENV === 'development' 
+        ? '/api' 
+        : process.env.API_URL ?? 'https://apipay.wsa-elite.com',
     },
   },
   nitro: {
     routeRules: {
-      '/backend/**': {
-        proxy: `${process.env.API_URL ?? 'https://admin.trexorstore.com'}/**`, // Proxy to the API server
+      // 👇 هذا هو الـ Proxy الصحيح
+      '/api/**': {
+        proxy: `${process.env.API_URL ?? 'https://apipay.wsa-elite.com'}/**`,
+        cors: true,  // 👈 هذا مهم
+      },
+      // يمكنك إضافة proxy للـ sanctum أيضًا
+      '/sanctum/**': {
+        proxy: `${process.env.API_URL ?? 'https://apipay.wsa-elite.com'}/sanctum/**`,
+        cors: true,
       },
       '/get-geoip/**': {
-        proxy: `http://ip-api.com/json/**`, // Proxy for geolocation API
+        proxy: `http://ip-api.com/json/**`,
       },
     },
     compressPublicAssets: true,
   },
 
-  modules: ['@nuxt/content', '@nuxt/fonts', '@nuxt/icon',
+  modules: [
+    '@nuxt/content', 
+    '@nuxt/fonts', 
+    '@nuxt/icon',
     '@nuxt/ui',
-    '@nuxt/image', '@nuxt/scripts', '@pinia/nuxt', '@nuxt/ui', 'nuxt-charts'],
+    '@nuxt/image', 
+    '@nuxt/scripts', 
+    '@pinia/nuxt', 
+    'nuxt-charts'
+  ],
 
   image: {
     inject: true,
@@ -50,29 +66,30 @@ export default defineNuxtConfig({
   },
 
   imports: {
-    dirs: ['./stores'], // Directory for auto-importing stores
+    dirs: ['./stores'],
+  },
+
+  // 👇 هذا مهم لإعدادات الـ Proxy
+  devServer: {
+    https: false,
+    host: 'localhost',
+    port: 3000,
   },
 
   app: {
     head: {
-      title: 'WSA PAY', // Application title
+      title: 'WSA PAY',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui' },
         { 'http-equiv': 'X-UA-Compatible', content: 'IE=edge' },
-        { name: 'description', content: 'Vuexy admin is super flexible, powerful, clean & modern responsive bootstrap 4 admin template with unlimited possibilities.' },
-        { name: 'keywords', content: 'admin template, Vuexy admin template, dashboard template, flat admin template, responsive admin template, web app' },
-        { name: 'author', content: 'PIXINVENT' },
+        { name: 'description', content: 'WSA PAY Admin Dashboard' },
+        { name: 'keywords', content: 'admin, dashboard, wsa, pay' },
+        { name: 'author', content: 'WSA' },
       ],
       link: [
-        // Favicons
-        { rel: 'apple-touch-icon', href: '/app-assets/images/ico/apple-icon-120.html' },
-        { rel: 'icon', type: 'image/x-icon', href: '/app-assets/images/ico/favicon.ico' },
-
-        // Fonts
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600' },
-
-        // Vendor CSS
         { rel: 'stylesheet', href: '/app-assets/vendors/css/vendors.min.css' },
         { rel: 'stylesheet', href: '/app-assets/vendors/css/forms/select/select2.min.css' },
         { rel: 'stylesheet', href: '/app-assets/vendors/css/extensions/sweetalert2.min.css' },
@@ -82,26 +99,18 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: '/app-assets/vendors/css/extensions/tether-theme-arrows.css' },
         { rel: 'stylesheet', href: '/app-assets/vendors/css/extensions/tether.min.css' },
         { rel: 'stylesheet', href: '/app-assets/vendors/css/extensions/shepherd-theme-default.css' },
-
-        // Theme CSS
         { rel: 'stylesheet', href: '/app-assets/css/bootstrap.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/bootstrap-extended.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/colors.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/components.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/themes/dark-layout.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/themes/semi-dark-layout.min.css' },
-
-        // Page-specific CSS
         { rel: 'stylesheet', href: '/app-assets/css/core/menu/menu-types/vertical-menu.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/core/colors/palette-gradient.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/pages/data-list-view.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/plugins/file-uploaders/dropzone.min.css' },
-
-        // Optional analytics/tour page styles (if used)
         { rel: 'stylesheet', href: '/app-assets/css/pages/card-analytics.min.css' },
         { rel: 'stylesheet', href: '/app-assets/css/plugins/tour/tour.min.css' },
-
-        // Custom styles
         { rel: 'stylesheet', href: '/assets/css/style.css' }
       ],
       script: [
