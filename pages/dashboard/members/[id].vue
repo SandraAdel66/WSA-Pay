@@ -1,5 +1,6 @@
 <template>
-  <div class="row">
+  <!-- Add refresh controls row -->
+  <div class="row mb-3">
     <div class="col-md-10">
       <ThemeBreadcrumb
         title="Member"
@@ -9,7 +10,8 @@
         :exportBtn="false"
       />
     </div>
-    <div class="col-md-2">
+    <div class="col-md-2 d-flex align-items-center justify-content-end gap-2">
+      <!-- Status filter -->
       <select
         v-model="status"
         @change="onStatusChange($event.target.value)"
@@ -25,10 +27,17 @@
       </select>
     </div>
   </div>
+  <!-- Last refresh time -->
+  <div v-if="lastRefreshTime" class="text-end mb-2">
+    <small class="text-muted">
+      Last updated: {{ lastRefreshTime.toLocaleTimeString() }}
+    </small>
+  </div>
+  
   <div v-if="member === null" class="bg-white">
     <ThemeSkelton/>
   </div>
-  <div v-if="member&& member.data">
+  <div v-if="member && member.data">
     <Modal
       :showModal="showModal"
       @update:showModal="showModal = $event"
@@ -123,8 +132,6 @@
                   <tr>
                     <th class="text-muted">Status</th>
                     <td>
-                      <!-- Status Selector -->
-
                       <div
                         :class="[
                           'text-bold-600',
@@ -160,18 +167,27 @@
               <i class="feather icon-save mr-50"></i>
               Balances
             </div>
-            <div
-              class="btn btn-primary avatar m-0 btn-icon p-0"
-              @click="openAddModal"
-            >
-              <div class="avatar-content">
-                <i
-                  class="feather icon-plus font-medium-3"
-                  v-if="
-                    !member.data?.balances || member.data?.balances.length === 0
-                  "
-                ></i>
-                <i class="feather icon-repeat font-medium-3" v-else></i>
+            <div>
+              <!-- Manage button: Show only when at least 1 balance exists -->
+              <div
+                class="btn btn-primary avatar m-0 btn-icon p-0 justify-start"
+                @click="openAddModal('manage')"
+                v-if="member?.data?.balances?.length >= 1"
+              >
+                <div class="avatar-content">
+                  <i class="feather icon-repeat font-medium-3"></i>
+                </div>
+              </div>
+              
+              <!-- Add button: Show when no balances OR less than 3 balances -->
+              <div
+                class="btn btn-primary avatar ml-2 btn-icon p-0 justify-end"
+                @click="openAddModal('add')"
+                v-if="!member?.data?.balances || member?.data?.balances?.length < 3"
+              >
+                <div class="avatar-content">
+                  <i class="feather icon-plus font-medium-3"></i>
+                </div>
               </div>
             </div>
           </h5>
@@ -216,10 +232,7 @@
               </div>
             </h5>
             <div
-              v-if="
-                member.data?.lastTransactions &&
-                member.data?.lastTransactions.length
-              "
+              v-if="member.data?.lastTransactions && member.data?.lastTransactions.length"
             >
               <div
                 v-for="sub in member.data?.lastTransactions"
@@ -234,9 +247,7 @@
                       {{ sub.type === "add" ? "Deposit" : "Withdrawal" }}
                     </strong>
                     <span
-                      :class="
-                        sub.type === 'add' ? 'text-success' : 'text-danger'
-                      "
+                      :class="sub.type === 'add' ? 'text-success' : 'text-danger'"
                       class="fw-bold"
                     >
                       {{ sub.type === "add" ? "+" : "-" }}{{ sub.amount }}
@@ -307,31 +318,131 @@
   </div>
 </template>
 
-<script setup >
+<script setup>
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 const route = useRoute();
 const memberId = route.params.id;
 
 import { useRouter } from "vue-router";
-
 const router = useRouter();
 const { updateStatus } = useApiStatusUpdate();
 import Modal from "@/components/theme/Modal.vue";
 const status = ref(null);
 const notify = useNotify();
+
+// ========== AUTO-REFRESH SETUP ==========
+const autoRefreshEnabled = ref(true);
+const refreshInterval = ref(null);
+const lastRefreshTime = ref(null);
+const isRefreshing = ref(false);
+
+// Auto-refresh every 15 seconds (15000ms)
+const AUTO_REFRESH_INTERVAL = 15000;
+
+// Keep your original useApiItem hook
 const {
   data: member,
   pending,
   error,
+  refresh: refreshMemberData, // Use the refresh function from your useApiItem
 } = useApiItem({
   api: "members",
   id: memberId,
 });
 
+// ========== AUTO-REFRESH FUNCTIONS ==========
+const startAutoRefresh = () => {
+  stopAutoRefresh();
+  
+  refreshInterval.value = setInterval(async () => {
+    if (autoRefreshEnabled.value && document.visibilityState === 'visible') {
+      await refreshAllData();
+    }
+  }, AUTO_REFRESH_INTERVAL);
+};
+
+const stopAutoRefresh = () => {
+  if (refreshInterval.value) {
+    clearInterval(refreshInterval.value);
+    refreshInterval.value = null;
+  }
+};
+
+const toggleAutoRefresh = () => {
+  autoRefreshEnabled.value = !autoRefreshEnabled.value;
+  if (autoRefreshEnabled.value) {
+    startAutoRefresh();
+    notify.success('Auto-refresh enabled');
+  } else {
+    stopAutoRefresh();
+    notify.info('Auto-refresh disabled');
+  }
+};
+
+const refreshAllData = async () => {
+  if (isRefreshing.value) return;
+  
+  isRefreshing.value = true;
+  lastRefreshTime.value = new Date();
+  
+  try {
+    // Use the refresh function from your useApiItem
+    if (refreshMemberData) {
+      await refreshMemberData();
+    }
+    console.log('Data auto-refreshed at', new Date().toLocaleTimeString());
+  } catch (error) {
+    console.error('Auto-refresh failed:', error);
+  } finally {
+    isRefreshing.value = false;
+  }
+};
+
+const manualRefresh = async () => {
+  await refreshAllData();
+  notify.success('Data refreshed!');
+};
+
+// ========== LIFE CYCLE HOOKS ==========
+onMounted(() => {
+  if (autoRefreshEnabled.value) {
+    startAutoRefresh();
+  }
+  
+  if (process.client) {
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  }
+});
+
+onBeforeUnmount(() => {
+  stopAutoRefresh();
+  if (process.client) {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }
+});
+
+const handleVisibilityChange = () => {
+  if (document.visibilityState === 'visible' && autoRefreshEnabled.value) {
+    refreshAllData();
+    startAutoRefresh();
+  } else if (document.visibilityState === 'hidden') {
+    stopAutoRefresh();
+  }
+};
+// ===========================================
+
 console.log(member.value);
 
 // Refs & Reactive States
 const showModal = ref(false);
-status.value = member?.data?.status ?? "pending";
+
+// Initialize status after member data loads
+watch(member, (newMember) => {
+  if (newMember?.data) {
+    status.value = newMember.data.status ?? "pending";
+  }
+}, { immediate: true });
+
 const modalTitle = ref("");
 const apiTitle = ref("add");
 const formFields = ref([]);
@@ -339,7 +450,7 @@ const apINewOrOldBalance = ref("");
 const currencies = [
   { label: "USD", value: "USD", name: "USD" },
   { label: "EUR", value: "EUR", name: "EUR" },
-  { label: "AUD", value: "AUD", name: "AUD" },
+  { label: "GBP", value: "GBP", name: "GBP" },
 ];
 
 const transactionTypes = [
@@ -389,27 +500,64 @@ const extendedFormFields = [
 ];
 
 // ========== Modal Functions ==========
-const openAddModal = () => {
-  modalTitle.value = "Manage Balance";
-  apiTitle.value = "add";
+const openAddModal = (actionType = 'add') => {
+  if (actionType === 'manage') {
+    modalTitle.value = "Manage Balance";
+    apiTitle.value = "manage";
+  } else {
+    modalTitle.value = "Add Balance";
+    apiTitle.value = "add";
+  }
 
-  const hasBalances = member?.value?.data?.balances?.length > 0;
+  if (actionType === 'manage') {
+    apINewOrOldBalance.value = `members/${memberId}/wallet/transaction`;
+  } else {
+    apINewOrOldBalance.value = `members/${memberId}/wallet`;
+  }
 
-  // Set the appropriate API endpoint
-  apINewOrOldBalance.value = hasBalances
-    ? `members/${memberId}/wallet/transaction`
-    : `members/${memberId}/wallet`;
-
-  // Prepare form fields
-  formFields.value = [
-    ...baseFormFields,
-    ...(hasBalances ? extendedFormFields : []),
-  ].map((f) => ({ ...f, value: "" }));
+  if (actionType === 'add') {
+    formFields.value = [
+      ...baseFormFields,
+    ].map((f) => ({ ...f, value: "" }));
+  } else {
+    formFields.value = [
+      ...baseFormFields,
+      ...extendedFormFields,
+    ].map((f) => ({ ...f, value: "" }));
+  }
 
   showModal.value = true;
 };
 
-// ===================================
+// Handle modal form submission
+const handleModalSubmit = async (formData) => {
+  try {
+    // Make the actual API call
+    const response = await $fetch(`/api/${apINewOrOldBalance.value}`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    // Schedule a refresh to get updated balances from server
+    setTimeout(() => {
+      refreshAllData();
+    }, 1000);
+    
+    notify.success('Transaction completed successfully!');
+  } catch (error) {
+    notify.error('Transaction failed: ' + (error.message || 'Unknown error'));
+  }
+};
+
+// If your Modal component emits a different event, adjust this
+// You might need to listen to a different event from Modal
+// Example: If Modal emits 'submit' instead of 'form-submitted'
+watch(showModal, (newVal) => {
+  if (!newVal) {
+    // Modal was closed, maybe refresh data
+    setTimeout(() => refreshAllData(), 500);
+  }
+});
 
 const copyToClipboard = (email) => {
   navigator.clipboard
@@ -435,20 +583,39 @@ const statusOptions = [
 
 // Change handler (with API call)
 const onStatusChange = async (newStatus) => {
-  await updateStatus({
-    api: "members",
-    type: "status",
-    id: memberId,
-    method: "POST",
-    status: newStatus, // true or false
-  });
+  try {
+    await updateStatus({
+      api: "members",
+      type: "status",
+      id: memberId,
+      method: "POST",
+      status: newStatus,
+    });
 
-  notify.success("Satus Changed Successfully");
+    notify.success("Status Changed Successfully");
+    
+    if (member.value?.data) {
+      member.value.data.status = newStatus;
+    }
+    
+    setTimeout(() => refreshAllData(), 1000);
+  } catch (error) {
+    notify.error("Failed to change status");
+    status.value = member.value?.data?.status;
+  }
 };
 </script>
 
-
 <style>
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .bg-select {
   background-color: #e6e6e6;
   transition: 0.3s ease-in-out;
@@ -469,5 +636,11 @@ const onStatusChange = async (newStatus) => {
   font-size: 13px;
   padding: 5px 10px;
   cursor: pointer;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.2rem;
 }
 </style>

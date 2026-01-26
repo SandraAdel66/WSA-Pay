@@ -25,21 +25,7 @@
         </div>
       </div>
     </div>
-    <div class="content-header-right text-md-right col-md-3 col-12">
-      <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-primary btn-icon mar" v-if="add" @click="openModal">
-          <i class="feather icon-plus"></i>
-        </button>
-        <button type="button" class="btn btn-primary btn-icon mar" v-if="filter" @click="openModalFilter">
-          <i class="feather icon-filter"></i>
-        </button>
-        <button type="button" class="w-8 hh-8 rounded-md mar" v-if="exportBtn"
-         @click="exportData">
-          <img src="/app-assets/images/icons/pdf.png" class="rounded-md w-full">
-        </button>
-      </div>
     </div>
-  </div>
 </template>
 
 <script setup>

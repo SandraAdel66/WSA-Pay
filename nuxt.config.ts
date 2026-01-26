@@ -10,9 +10,6 @@ export default defineNuxtConfig({
     ]
   },
   ssr: true,
-  pinia: {
-    autoImports: ['defineStore'],
-  },
   runtimeConfig: {
     public: {
       appUrl: process.env.APP_URL ?? 'https://trexorstore.com',
