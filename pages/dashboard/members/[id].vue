@@ -27,13 +27,6 @@
       </select>
     </div>
   </div>
-  <!-- Last refresh time -->
-  <div v-if="lastRefreshTime" class="text-end mb-2">
-    <small class="text-muted">
-      Last updated: {{ lastRefreshTime.toLocaleTimeString() }}
-    </small>
-  </div>
-  
   <div v-if="member === null" class="bg-white">
     <ThemeSkelton/>
   </div>
@@ -172,18 +165,17 @@
               <div
                 class="btn btn-primary avatar m-0 btn-icon p-0 justify-start"
                 @click="openAddModal('manage')"
-                v-if="member?.data?.balances?.length >= 1"
+                v-if="hasBalancesToManage"
               >
                 <div class="avatar-content">
                   <i class="feather icon-repeat font-medium-3"></i>
                 </div>
               </div>
-              
               <!-- Add button: Show when no balances OR less than 3 balances -->
               <div
                 class="btn btn-primary avatar ml-2 btn-icon p-0 justify-end"
                 @click="openAddModal('add')"
-                v-if="!member?.data?.balances || member?.data?.balances?.length < 3"
+                v-if="canAddMoreBalances"
               >
                 <div class="avatar-content">
                   <i class="feather icon-plus font-medium-3"></i>
@@ -192,11 +184,12 @@
             </div>
           </h5>
 
-          <div v-if="member.data?.balances && member.data?.balances.length">
+          <!-- Display only balances with balance > 0 -->
+          <div v-if="activeBalances && activeBalances.length">
             <div class="card mb-0">
               <div
                 class="card-header balance-header"
-                v-for="item in member.data?.balances"
+                v-for="item in activeBalances"
                 :key="item.currency"
               >
                 <h4>{{ item.balance }} {{ item.currency }}</h4>
@@ -319,7 +312,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 const route = useRoute();
 const memberId = route.params.id;
 
@@ -344,7 +337,7 @@ const {
   data: member,
   pending,
   error,
-  refresh: refreshMemberData, // Use the refresh function from your useApiItem
+  refresh: refreshMemberData,
 } = useApiItem({
   api: "members",
   id: memberId,
@@ -386,11 +379,9 @@ const refreshAllData = async () => {
   lastRefreshTime.value = new Date();
   
   try {
-    // Use the refresh function from your useApiItem
     if (refreshMemberData) {
       await refreshMemberData();
     }
-    console.log('Data auto-refreshed at', new Date().toLocaleTimeString());
   } catch (error) {
     console.error('Auto-refresh failed:', error);
   } finally {
@@ -431,8 +422,6 @@ const handleVisibilityChange = () => {
 };
 // ===========================================
 
-console.log(member.value);
-
 // Refs & Reactive States
 const showModal = ref(false);
 
@@ -458,6 +447,46 @@ const transactionTypes = [
   { label: "Deposit", value: "add" },
 ];
 
+// Function to remove zero balances from the member data array
+const cleanZeroBalances = () => {
+  if (member.value?.data?.balances) {
+    // Filter out balances that are 0 or less
+    const nonZeroBalances = member.value.data.balances.filter(balance => 
+      parseFloat(balance.balance) > 0
+    );
+    
+    // Update the member data with filtered balances
+    member.value.data.balances = nonZeroBalances;
+  }
+};
+
+// Watch for member data changes and clean zero balances
+watch(() => member.value?.data?.balances, (newBalances) => {
+  if (newBalances) {
+    // Check if any balance is 0 and clean immediately
+    const hasZeroBalance = newBalances.some(balance => parseFloat(balance.balance) <= 0);
+    if (hasZeroBalance) {
+      cleanZeroBalances();
+    }
+  }
+}, { deep: true, immediate: true });
+
+// Computed property to get active balances (should only contain balances > 0 after cleaning)
+const activeBalances = computed(() => {
+  if (!member.value?.data?.balances) return [];
+  return member.value.data.balances;
+});
+
+// Computed properties for button visibility
+const hasBalancesToManage = computed(() => {
+  return activeBalances.value.length > 0;
+});
+
+const canAddMoreBalances = computed(() => {
+  return !member.value?.data?.balances || 
+         member.value.data.balances.length < 3;
+});
+
 // Modal Form Fields Config
 const baseFormFields = [
   {
@@ -467,7 +496,6 @@ const baseFormFields = [
     placeholder: "Choose Currency",
     required: true,
     class: "form-control",
-    options: currencies,
   },
   {
     name: "balance",
@@ -516,14 +544,84 @@ const openAddModal = (actionType = 'add') => {
   }
 
   if (actionType === 'add') {
+    // For add modal - show currencies that don't already exist in balances
+    // Since zero balances are removed, this will include currencies that were removed
+    const existingCurrencies = member.value?.data?.balances?.map(b => b.currency) || [];
+    const availableCurrencies = currencies.filter(currency => 
+      !existingCurrencies.includes(currency.value)
+    );
+    
     formFields.value = [
-      ...baseFormFields,
-    ].map((f) => ({ ...f, value: "" }));
+      {
+        name: "currency",
+        label: "Currency",
+        type: "select",
+        placeholder: "Choose Currency",
+        required: true,
+        class: "form-control",
+        options: availableCurrencies,
+        value: availableCurrencies.length === 1 ? availableCurrencies[0].value : ""
+      },
+      {
+        name: "balance",
+        label: "Initial Balance",
+        type: "number",
+        placeholder: "Enter Balance",
+        required: true,
+        class: "form-control",
+        min: 0.01, // Prevent adding 0 balance
+        step: "0.01",
+        value: ""
+      }
+    ];
   } else {
+    // For manage modal - show only currencies that exist (all should have balance > 0)
+    const manageCurrencyOptions = activeBalances.value.map(balance => ({
+      label: balance.currency,
+      value: balance.currency,
+      name: balance.currency
+    }));
+    
     formFields.value = [
-      ...baseFormFields,
-      ...extendedFormFields,
-    ].map((f) => ({ ...f, value: "" }));
+      {
+        name: "currency",
+        label: "Currency",
+        type: "select",
+        placeholder: "Choose Currency",
+        required: true,
+        class: "form-control",
+        options: manageCurrencyOptions,
+        value: manageCurrencyOptions.length === 1 ? manageCurrencyOptions[0].value : ""
+      },
+      {
+        name: "balance",
+        label: "Balance",
+        type: "number",
+        placeholder: "Enter Balance",
+        required: true,
+        class: "form-control",
+        value: ""
+      },
+      {
+        name: "type",
+        label: "Transaction Type",
+        type: "select",
+        placeholder: "Choose Type",
+        required: true,
+        class: "form-control",
+        options: transactionTypes,
+        value: ""
+      },
+      {
+        name: "description",
+        label: "Description",
+        type: "textarea",
+        placeholder: "Enter Description",
+        required: false,
+        class: "form-control",
+        value: ""
+      }
+    ];
   }
 
   showModal.value = true;
@@ -532,13 +630,11 @@ const openAddModal = (actionType = 'add') => {
 // Handle modal form submission
 const handleModalSubmit = async (formData) => {
   try {
-    // Make the actual API call
     const response = await $fetch(`/api/${apINewOrOldBalance.value}`, {
       method: 'POST',
       body: formData
     });
     
-    // Schedule a refresh to get updated balances from server
     setTimeout(() => {
       refreshAllData();
     }, 1000);
@@ -549,12 +645,8 @@ const handleModalSubmit = async (formData) => {
   }
 };
 
-// If your Modal component emits a different event, adjust this
-// You might need to listen to a different event from Modal
-// Example: If Modal emits 'submit' instead of 'form-submitted'
 watch(showModal, (newVal) => {
   if (!newVal) {
-    // Modal was closed, maybe refresh data
     setTimeout(() => refreshAllData(), 500);
   }
 });
@@ -642,5 +734,14 @@ const onStatusChange = async (newStatus) => {
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
   border-radius: 0.2rem;
+}
+
+.balance-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.balance-header:last-child {
+  border-bottom: none;
 }
 </style>
