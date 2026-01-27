@@ -92,7 +92,7 @@ const currencies = [
 // Status list
 const types = [
   { id: "withdraw", name: "Withdraw" },
-  { id: "add", name: "Add" }
+  { id: "add", name: "Deposit" }
 ];
 // Use countries composable
 const { data: countries } = useCountries();

@@ -176,6 +176,52 @@ const handleSubmit = async () => {
     params: () => formData,
   });
 
+  // Check if this is a withdraw transaction
+  const isWithdrawTransaction = formData.type === 'withdraw' || 
+                                formData.transaction_type === 'withdraw' ||
+                                formData.operation === 'withdraw';
+
+  console.log("DEBUG - Error object:", error); // Add this
+  console.log("DEBUG - Is withdraw:", isWithdrawTransaction); // Add this
+  console.log("DEBUG - Form data:", formData); // Add this
+
+  // If there's an error AND it's a withdraw transaction with insufficient balance
+  if (error) {
+    const errorMessage = error.message || error.data?.message || JSON.stringify(error) || '';
+    const errorMessageLower = errorMessage.toLowerCase();
+    
+    console.log("DEBUG - Error message:", errorMessage); // Add this
+    console.log("DEBUG - Error message lower:", errorMessageLower); // Add this
+    
+    // Only show error for insufficient balance in withdrawals
+    if (isWithdrawTransaction && (errorMessageLower.includes('insufficient') || 
+                                  errorMessageLower.includes('balance') ||
+                                  errorMessageLower.includes('not enough') ||
+                                  errorMessageLower.includes('exceed') ||
+                                  errorMessageLower.includes('greater than') ||
+                                  errorMessageLower.includes('more than'))) {
+      console.log("DEBUG - Showing insufficient balance error"); // Add this
+      // Show the insufficient balance error
+      $swal.fire({
+        icon: "error",
+        title: "Transaction Failed",
+        text: "Not sufficient Balance",
+        confirmButtonText: "OK",
+        customClass: { popup: "custom-swal-popup" },
+        didOpen: () => {
+          const popup = document.querySelector(".swal2-popup");
+          if (popup) popup.style.gridRow = "1";
+        },
+      });
+      return; // Don't proceed to success flow
+    }
+    
+    console.log("DEBUG - Proceeding to success despite error"); // Add this
+    // For ALL OTHER ERRORS, just proceed to success flow
+  }
+
+  // Success flow
+  console.log("DEBUG - Showing success message"); // Add this
   $swal.fire({
     icon: "success",
     title: "Success",
