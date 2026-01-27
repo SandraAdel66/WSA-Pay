@@ -328,8 +328,11 @@ const autoRefreshEnabled = ref(true);
 const refreshInterval = ref(null);
 const lastRefreshTime = ref(null);
 const isRefreshing = ref(false);
+
+// Auto-refresh every 15 seconds (15000ms)
 const AUTO_REFRESH_INTERVAL = 15000;
 
+// Keep your original useApiItem hook
 const {
   data: member,
   pending,
@@ -417,6 +420,7 @@ const handleVisibilityChange = () => {
     stopAutoRefresh();
   }
 };
+// ===========================================
 
 // Refs & Reactive States
 const showModal = ref(false);
