@@ -31,6 +31,7 @@
     <ThemeSkelton/>
   </div>
   <div v-if="member && member.data">
+    <!-- Main Modal for Balance Management -->
     <Modal
       :showModal="showModal"
       @update:showModal="showModal = $event"
@@ -38,7 +39,24 @@
       :title="modalTitle"
       :apiTitle="apiTitle"
       :apiName="apINewOrOldBalance"
+      @success="handleModalSuccess"
+      @error="handleModalError"
+      @refresh="handleModalRefresh"
     />
+    
+    <!-- Sub Account Modal -->
+    <Modal
+      :showModal="showSubAccountModal"
+      @update:showModal="showSubAccountModal = $event"
+      :formFields="subAccountFormFields"
+      title="Add New Sub Account"
+      apiTitle="add"
+      :apiName="`members/${memberId}/sub-accounts`"
+      @success="handleSubAccountSuccess"
+      @error="handleSubAccountError"
+      @refresh="handleSubAccountRefresh"
+    />
+    
     <section class="user-details">
       <div class="row">
         <!-- Account Info -->
@@ -161,21 +179,21 @@
               Balances
             </div>
             <div>
-              <!-- Manage button: Show only when at least 1 balance exists -->
+              <!-- Manage button: Show when at least 1 currency exists -->
               <div
                 class="btn btn-primary avatar m-0 btn-icon p-0 justify-start"
-                @click="openAddModal('manage')"
-                v-if="hasBalancesToManage"
+                @click="openManageModal()"
+                v-if="hasAnyCurrency"
               >
                 <div class="avatar-content">
                   <i class="feather icon-repeat font-medium-3"></i>
                 </div>
               </div>
-              <!-- Add button: Show when no balances OR less than 3 balances -->
+              <!-- Add button: Show when less than 3 currencies exist -->
               <div
                 class="btn btn-primary avatar ml-2 btn-icon p-0 justify-end"
-                @click="openAddModal('add')"
-                v-if="canAddMoreBalances"
+                @click="openAddModal()"
+                v-if="canAddMoreCurrencies"
               >
                 <div class="avatar-content">
                   <i class="feather icon-plus font-medium-3"></i>
@@ -184,29 +202,30 @@
             </div>
           </h5>
 
-          <!-- Display only balances with balance > 0 -->
-          <div v-if="activeBalances && activeBalances.length">
-            <div class="card mb-0">
-              <div
-                class="card-header balance-header"
-                v-for="item in activeBalances"
-                :key="item.currency"
-              >
-                <h4>{{ item.balance }} {{ item.currency }}</h4>
+          <!-- Display all 3 currencies - show actual balance if exists, otherwise show 0 -->
+          <div class="card mb-0">
+            <div
+              class="card-header balance-header d-flex justify-content-between align-items-center"
+              v-for="currency in currencies"
+              :key="currency.value"
+            >
+              <div class="d-flex align-items-center">
+                <h4 class="mb-0" :class="getBalanceTextClass(currency.value)">
+                  {{ getBalanceForCurrency(currency.value) }} {{ currency.value }}
+                </h4>
+                <!-- Zero balance label -->
+                <span 
+                  v-if="currencyExists(currency.value) && getBalanceForCurrency(currency.value) <= 0"
+                  class="zero-balance-label ml-2"
+                >
+                  (zero balance)
+                </span>
               </div>
+              <!-- Empty space for alignment -->
+              <div style="width: 40px;"></div>
             </div>
           </div>
-          <div v-else>
-            <div class="card mb-0">
-              <div
-                class="card-header balance-header"
-                v-for="item in currencies"
-                :key="item.value"
-              >
-                <h4>0 {{ item.label }}</h4>
-              </div>
-            </div>
-          </div>
+
           <div class="">
             <h5
               class="card-title d-flex justify-content-between align-items-center"
@@ -274,14 +293,25 @@
 
         <!-- Sub Accounts -->
         <div class="col-12">
-          <h5 class="card-title">
-            <i class="feather icon-lock mr-50"></i>
-            Sub Accounts
+          <h5 class="card-title d-flex justify-content-between align-items-center">
+            <div>
+              <i class="feather icon-lock mr-50"></i>
+              Sub Accounts
+            </div>
+            <button 
+              class="btn btn-primary btn-sm"
+              @click="openSubAccountModal"
+            >
+              <i class="feather icon-plus"></i> Add New Account
+            </button>
           </h5>
 
           <div class="card">
             <div class="card-body card-padding">
-              <div class="table-responsive">
+              <div v-if="!member.data?.subAccounts?.length" class="text-center text-muted py-4">
+                No sub accounts found. Click "Add New Account" to create one.
+              </div>
+              <div v-else class="table-responsive">
                 <table class="table">
                   <thead>
                     <tr>
@@ -328,8 +358,6 @@ const autoRefreshEnabled = ref(true);
 const refreshInterval = ref(null);
 const lastRefreshTime = ref(null);
 const isRefreshing = ref(false);
-
-// Auto-refresh every 15 seconds (15000ms)
 const AUTO_REFRESH_INTERVAL = 15000;
 
 // Keep your original useApiItem hook
@@ -424,6 +452,7 @@ const handleVisibilityChange = () => {
 
 // Refs & Reactive States
 const showModal = ref(false);
+const showSubAccountModal = ref(false);
 
 // Initialize status after member data loads
 watch(member, (newMember) => {
@@ -435,6 +464,7 @@ watch(member, (newMember) => {
 const modalTitle = ref("");
 const apiTitle = ref("add");
 const formFields = ref([]);
+const subAccountFormFields = ref([]);
 const apINewOrOldBalance = ref("");
 const currencies = [
   { label: "USD", value: "USD", name: "USD" },
@@ -447,206 +477,336 @@ const transactionTypes = [
   { label: "Deposit", value: "add" },
 ];
 
-// Function to remove zero balances from the member data array
-const cleanZeroBalances = () => {
-  if (member.value?.data?.balances) {
-    // Filter out balances that are 0 or less
-    const nonZeroBalances = member.value.data.balances.filter(balance => 
-      parseFloat(balance.balance) > 0
-    );
-    
-    // Update the member data with filtered balances
-    member.value.data.balances = nonZeroBalances;
+// Track ALL existing currencies in backend (including zero balances)
+const allExistingCurrencies = ref([]);
+
+// Update allExistingCurrencies when member data loads
+watch(member, (newMember) => {
+  if (newMember?.data?.balances) {
+    allExistingCurrencies.value = newMember.data.balances.map(b => b.currency);
+    console.log('Backend currencies (ALL):', allExistingCurrencies.value);
+  } else {
+    allExistingCurrencies.value = [];
   }
+}, { immediate: true, deep: true });
+
+// Helper functions
+const currencyExists = (currencyCode) => {
+  return allExistingCurrencies.value.includes(currencyCode);
 };
 
-// Watch for member data changes and clean zero balances
-watch(() => member.value?.data?.balances, (newBalances) => {
-  if (newBalances) {
-    // Check if any balance is 0 and clean immediately
-    const hasZeroBalance = newBalances.some(balance => parseFloat(balance.balance) <= 0);
-    if (hasZeroBalance) {
-      cleanZeroBalances();
-    }
-  }
-}, { deep: true, immediate: true });
+const getBalanceForCurrency = (currencyCode) => {
+  if (!member.value?.data?.balances) return 0;
+  
+  const currencyBalance = member.value.data.balances.find(
+    b => b.currency === currencyCode
+  );
+  
+  return currencyBalance ? currencyBalance.balance : 0;
+};
 
-// Computed property to get active balances (should only contain balances > 0 after cleaning)
-const activeBalances = computed(() => {
-  if (!member.value?.data?.balances) return [];
-  return member.value.data.balances;
-});
+// Helper to get text color based on balance
+const getBalanceTextClass = (currencyCode) => {
+  const balance = getBalanceForCurrency(currencyCode);
+  if (balance > 0) {
+    return 'text-success';
+  } else if (balance === 0 && currencyExists(currencyCode)) {
+    return 'text-muted';
+  }
+  return 'text-secondary';
+};
 
 // Computed properties for button visibility
-const hasBalancesToManage = computed(() => {
-  return activeBalances.value.length > 0;
+const hasAnyCurrency = computed(() => {
+  return allExistingCurrencies.value.length > 0;
 });
 
-const canAddMoreBalances = computed(() => {
-  return !member.value?.data?.balances || 
-         member.value.data.balances.length < 3;
+const canAddMoreCurrencies = computed(() => {
+  // Can add if less than 3 currencies exist
+  return allExistingCurrencies.value.length < 3;
 });
 
-// Modal Form Fields Config
-const baseFormFields = [
-  {
-    name: "currency",
-    label: "Currency",
-    type: "select",
-    placeholder: "Choose Currency",
-    required: true,
-    class: "form-control",
-  },
-  {
-    name: "balance",
-    label: "Balance",
-    type: "number",
-    placeholder: "Enter Balance",
-    required: true,
-    class: "form-control",
-  },
-];
+// ========== Sub Account Functions ==========
+const openSubAccountModal = () => {
+  // Set up form fields for sub account
+  subAccountFormFields.value = [
+    {
+      name: "name",
+      label: "Name",
+      type: "text",
+      placeholder: "Enter Name",
+      required: true,
+      class: "form-control",
+      value: ""
+    },
+    {
+      name: "display_name",
+      label: "Display Name",
+      type: "text",
+      placeholder: "Enter Display Name",
+      required: true,
+      class: "form-control",
+      value: ""
+    },
+    {
+      name: "email",
+      label: "Email",
+      type: "email",
+      placeholder: "Enter Email",
+      required: true,
+      class: "form-control",
+      value: ""
+    },
+    {
+      name: "phone",
+      label: "Phone",
+      type: "text",
+      placeholder: "Enter Phone Number",
+      required: true,
+      class: "form-control",
+      value: ""
+    }
+  ];
 
-const extendedFormFields = [
-  {
-    name: "type",
-    label: "Transaction Type",
-    type: "select",
-    placeholder: "Choose Type",
-    required: true,
-    class: "form-control",
-    options: transactionTypes,
-  },
-  {
-    name: "description",
-    label: "Description",
-    type: "textarea",
-    placeholder: "Enter Description",
-    required: false,
-    class: "form-control",
-  },
-];
+  showSubAccountModal.value = true;
+};
+
+const handleSubAccountSuccess = (response) => {
+  console.log('Sub account created:', response);
+  notify.success('Sub account created successfully!');
+  showSubAccountModal.value = false;
+  
+  // Refresh member data to show new sub account
+  setTimeout(() => {
+    refreshAllData();
+  }, 1000);
+};
+
+const handleSubAccountError = (error) => {
+  console.error('Sub account error:', error);
+  
+  let errorMessage = 'Failed to create sub account';
+  
+  if (error.message) {
+    errorMessage = error.message;
+  } else if (error.data?.message) {
+    errorMessage = error.data.message;
+  } else if (error.data?.errors) {
+    const errors = error.data.errors;
+    errorMessage = Object.values(errors).flat().join(', ');
+  }
+  
+  notify.error(errorMessage);
+  showSubAccountModal.value = false;
+};
+
+const handleSubAccountRefresh = () => {
+  console.log('Sub account refresh event');
+  setTimeout(() => refreshAllData(), 1000);
+};
 
 // ========== Modal Functions ==========
-const openAddModal = (actionType = 'add') => {
-  if (actionType === 'manage') {
-    modalTitle.value = "Manage Balance";
-    apiTitle.value = "manage";
-  } else {
-    modalTitle.value = "Add Balance";
-    apiTitle.value = "add";
-  }
 
-  if (actionType === 'manage') {
-    apINewOrOldBalance.value = `members/${memberId}/wallet/transaction`;
-  } else {
-    apINewOrOldBalance.value = `members/${memberId}/wallet`;
+// Add new currency (only when less than 3 exist)
+const openAddModal = () => {
+  if (!canAddMoreCurrencies.value) {
+    notify.error('Maximum 3 currencies allowed. Use "Manage Balance" for transactions.');
+    return;
   }
-
-  if (actionType === 'add') {
-    // For add modal - show currencies that don't already exist in balances
-    // Since zero balances are removed, this will include currencies that were removed
-    const existingCurrencies = member.value?.data?.balances?.map(b => b.currency) || [];
-    const availableCurrencies = currencies.filter(currency => 
-      !existingCurrencies.includes(currency.value)
-    );
-    
-    formFields.value = [
-      {
-        name: "currency",
-        label: "Currency",
-        type: "select",
-        placeholder: "Choose Currency",
-        required: true,
-        class: "form-control",
-        options: availableCurrencies,
-        value: availableCurrencies.length === 1 ? availableCurrencies[0].value : ""
-      },
-      {
-        name: "balance",
-        label: "Initial Balance",
-        type: "number",
-        placeholder: "Enter Balance",
-        required: true,
-        class: "form-control",
-        min: 0.01, // Prevent adding 0 balance
-        step: "0.01",
-        value: ""
-      }
-    ];
-  } else {
-    // For manage modal - show only currencies that exist (all should have balance > 0)
-    const manageCurrencyOptions = activeBalances.value.map(balance => ({
-      label: balance.currency,
-      value: balance.currency,
-      name: balance.currency
-    }));
-    
-    formFields.value = [
-      {
-        name: "currency",
-        label: "Currency",
-        type: "select",
-        placeholder: "Choose Currency",
-        required: true,
-        class: "form-control",
-        options: manageCurrencyOptions,
-        value: manageCurrencyOptions.length === 1 ? manageCurrencyOptions[0].value : ""
-      },
-      {
-        name: "balance",
-        label: "Balance",
-        type: "number",
-        placeholder: "Enter Balance",
-        required: true,
-        class: "form-control",
-        value: ""
-      },
-      {
-        name: "type",
-        label: "Transaction Type",
-        type: "select",
-        placeholder: "Choose Type",
-        required: true,
-        class: "form-control",
-        options: transactionTypes,
-        value: ""
-      },
-      {
-        name: "description",
-        label: "Description",
-        type: "textarea",
-        placeholder: "Enter Description",
-        required: false,
-        class: "form-control",
-        value: ""
-      }
-    ];
+  
+  modalTitle.value = "Add New Currency";
+  apiTitle.value = "add";
+  // Use CREATE wallet endpoint
+  apINewOrOldBalance.value = `members/${memberId}/wallet`;
+  
+  // Show only currencies that don't exist yet
+  const availableCurrencies = currencies.filter(currency => 
+    !allExistingCurrencies.value.includes(currency.value)
+  );
+  
+  if (availableCurrencies.length === 0) {
+    notify.error('All currencies already exist. Use "Manage Balance" for transactions.');
+    return;
   }
+  
+  formFields.value = [
+    {
+      name: "currency",
+      label: "Currency",
+      type: "select",
+      placeholder: "Choose Currency",
+      required: true,
+      class: "form-control",
+      options: availableCurrencies,
+      value: availableCurrencies.length === 1 ? availableCurrencies[0].value : ""
+    },
+    {
+      name: "balance",
+      label: "Initial Balance",
+      type: "number",
+      placeholder: "Enter Initial Balance",
+      required: true,
+      class: "form-control",
+      min: 0.01,
+      step: "0.01",
+      value: ""
+    }
+  ];
 
   showModal.value = true;
 };
 
-// Handle modal form submission
-const handleModalSubmit = async (formData) => {
-  try {
-    const response = await $fetch(`/api/${apINewOrOldBalance.value}`, {
-      method: 'POST',
-      body: formData
-    });
-    
-    setTimeout(() => {
-      refreshAllData();
-    }, 1000);
-    
-    notify.success('Transaction completed successfully!');
-  } catch (error) {
-    notify.error('Transaction failed: ' + (error.message || 'Unknown error'));
+// Manage existing currencies (deposit/withdraw)
+const openManageModal = () => {
+  if (!hasAnyCurrency.value) {
+    notify.error('No currencies to manage. Please add a currency first.');
+    return;
   }
+  
+  modalTitle.value = "Manage Balance";
+  apiTitle.value = "manage";
+  // Use transaction endpoint
+  apINewOrOldBalance.value = `members/${memberId}/wallet/transaction`;
+  
+  // Show only currencies that exist in backend
+  const existingCurrencyOptions = allExistingCurrencies.value.map(currency => ({
+    label: currency,
+    value: currency,
+    name: currency
+  }));
+  
+  formFields.value = [
+    {
+      name: "currency",
+      label: "Currency",
+      type: "select",
+      placeholder: "Choose Currency",
+      required: true,
+      class: "form-control",
+      options: existingCurrencyOptions,
+      value: existingCurrencyOptions.length === 1 ? existingCurrencyOptions[0].value : ""
+    },
+    {
+      name: "balance",
+      label: "Amount",
+      type: "number",
+      placeholder: "Enter Amount",
+      required: true,
+      class: "form-control",
+      min: 0.01,
+      step: "0.01",
+      value: ""
+    },
+    {
+      name: "type",
+      label: "Transaction Type",
+      type: "select",
+      placeholder: "Choose Type",
+      required: true,
+      class: "form-control",
+      options: transactionTypes,
+      value: "add"
+    },
+    {
+      name: "description",
+      label: "Description (Optional)",
+      type: "textarea",
+      placeholder: "Enter Description",
+      required: false,
+      class: "form-control",
+      value: ""
+    }
+  ];
+
+  showModal.value = true;
+};
+
+// Modal event handlers
+const handleModalSuccess = (response) => {
+  console.log('Modal success event:', response);
+  
+  let successMessage = 'Operation completed successfully!';
+  
+  if (apiTitle.value === 'add') {
+    successMessage = 'Currency added successfully!';
+    
+    // Add new currency to tracking list
+    const newCurrency = formFields.value.find(f => f.name === 'currency')?.value;
+    if (newCurrency && !allExistingCurrencies.value.includes(newCurrency)) {
+      allExistingCurrencies.value.push(newCurrency);
+    }
+  } else {
+    const transactionType = formFields.value.find(f => f.name === 'type')?.value;
+    if (transactionType === 'add') {
+      successMessage = 'Deposit completed successfully!';
+    } else {
+      successMessage = 'Withdrawal completed successfully!';
+      
+      // If withdrawal resulted in wallet deletion
+      if (response?.data?.walletDeleted) {
+        const currency = formFields.value.find(f => f.name === 'currency')?.value;
+        if (currency) {
+          allExistingCurrencies.value = allExistingCurrencies.value.filter(c => c !== currency);
+          successMessage = 'Withdrawal completed. Wallet deleted as balance reached 0.';
+        }
+      }
+    }
+  }
+  
+  notify.success(successMessage);
+  showModal.value = false;
+  
+  // Refresh data
+  setTimeout(() => {
+    refreshAllData();
+  }, 1000);
+};
+
+const handleModalError = (error) => {
+  console.error('Modal error event:', error);
+  
+  let errorMessage = 'Operation failed';
+  
+  if (error.message) {
+    errorMessage = error.message;
+  } else if (error.data?.message) {
+    errorMessage = error.data.message;
+  } else if (error.data?.errors) {
+    // Handle validation errors
+    const errors = error.data.errors;
+    errorMessage = Object.values(errors).flat().join(', ');
+  }
+  
+  // Handle specific error cases
+  if (errorMessage.includes('already exists') || errorMessage.includes('Wallet with this currency already exists')) {
+    errorMessage = 'This currency already exists. Please use "Manage Balance" for deposits.';
+    // Refresh currency list
+    refreshAllData();
+  } else if (errorMessage.includes('Insufficient') || errorMessage.includes('balance')) {
+    errorMessage = 'Insufficient balance for this transaction.';
+  } else if (error.status === 400) {
+    errorMessage = errorMessage || 'Invalid request. Please check your input.';
+  }
+  
+  notify.error(errorMessage);
+  showModal.value = false;
+};
+
+const handleModalRefresh = () => {
+  console.log('Modal refresh event received');
+  setTimeout(() => refreshAllData(), 1000);
 };
 
 watch(showModal, (newVal) => {
   if (!newVal) {
+    // Modal was closed, refresh data
+    setTimeout(() => refreshAllData(), 500);
+  }
+});
+
+watch(showSubAccountModal, (newVal) => {
+  if (!newVal) {
+    // Sub account modal was closed
     setTimeout(() => refreshAllData(), 500);
   }
 });
@@ -743,5 +903,31 @@ const onStatusChange = async (newStatus) => {
 
 .balance-header:last-child {
   border-bottom: none;
+}
+
+/* Style for zero balance label */
+.zero-balance-label {
+  font-size: 0.8rem;
+  color: #888;
+  font-style: italic;
+  background-color: #f8f9fa;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px dashed #dee2e6;
+}
+
+/* Color coding for balances */
+.text-success {
+  color: #28a745 !important;
+  font-weight: 600;
+}
+
+.text-muted {
+  color: #6c757d !important;
+  opacity: 0.7;
+}
+
+.text-secondary {
+  color: #6c757d !important;
 }
 </style>
